@@ -52,14 +52,14 @@ const ParameterBarChart = ({ data = [] }) => {
       label: 'Average Values',
       data: [averages.flowrate, averages.pressure, averages.temperature],
       backgroundColor: [
-        'rgba(47, 92, 70, 0.7)',   // Forest green
-        'rgba(60, 179, 113, 0.7)',  // Medium sea green
-        'rgba(76, 175, 80, 0.7)',   // Light green
+        'rgba(59, 130, 246, 0.7)',  // Blue for Flowrate
+        'rgba(251, 146, 60, 0.7)',  // Orange for Pressure
+        'rgba(239, 68, 68, 0.7)',   // Red for Temperature
       ],
       borderColor: [
-        'rgba(47, 92, 70, 1)',
-        'rgba(60, 179, 113, 1)',
-        'rgba(76, 175, 80, 1)',
+        'rgba(59, 130, 246, 1)',
+        'rgba(251, 146, 60, 1)',
+        'rgba(239, 68, 68, 1)',
       ],
       borderWidth: 2,
       borderRadius: 6,

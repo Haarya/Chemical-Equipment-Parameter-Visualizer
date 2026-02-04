@@ -34,27 +34,27 @@ const TypeDistributionChart = ({ data = [] }) => {
     const types = Object.keys(typeDistribution);
     const counts = Object.values(typeDistribution);
     
-    // Chemistry-themed color palette
+    // Vibrant distinct color palette
     const colors = [
-      'rgba(47, 92, 70, 0.8)',    // Forest green
-      'rgba(34, 139, 34, 0.8)',   // Forest green (light)
-      'rgba(60, 179, 113, 0.8)',  // Medium sea green
-      'rgba(46, 125, 50, 0.8)',   // Green
-      'rgba(27, 94, 32, 0.8)',    // Dark green
-      'rgba(76, 175, 80, 0.8)',   // Light green
-      'rgba(104, 159, 56, 0.8)',  // Lime green
-      'rgba(51, 105, 30, 0.8)',   // Dark forest
+      'rgba(59, 130, 246, 0.8)',  // Blue
+      'rgba(16, 185, 129, 0.8)',  // Emerald
+      'rgba(251, 146, 60, 0.8)',  // Orange
+      'rgba(168, 85, 247, 0.8)',  // Purple
+      'rgba(236, 72, 153, 0.8)',  // Pink
+      'rgba(14, 165, 233, 0.8)',  // Sky
+      'rgba(245, 158, 11, 0.8)',  // Amber
+      'rgba(239, 68, 68, 0.8)',   // Red
     ];
 
     const borderColors = [
-      'rgba(47, 92, 70, 1)',
-      'rgba(34, 139, 34, 1)',
-      'rgba(60, 179, 113, 1)',
-      'rgba(46, 125, 50, 1)',
-      'rgba(27, 94, 32, 1)',
-      'rgba(76, 175, 80, 1)',
-      'rgba(104, 159, 56, 1)',
-      'rgba(51, 105, 30, 1)',
+      'rgba(59, 130, 246, 1)',
+      'rgba(16, 185, 129, 1)',
+      'rgba(251, 146, 60, 1)',
+      'rgba(168, 85, 247, 1)',
+      'rgba(236, 72, 153, 1)',
+      'rgba(14, 165, 233, 1)',
+      'rgba(245, 158, 11, 1)',
+      'rgba(239, 68, 68, 1)',
     ];
 
     return {
