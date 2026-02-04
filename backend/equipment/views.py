@@ -417,152 +417,61 @@ class GeneratePDFReportView(APIView):
         # Get equipment records
         equipment_records = Equipment.objects.filter(dataset=dataset).order_by('equipment_name')
         
-        # Create PDF in memory
-        buffer = io.BytesIO()
-        
         try:
-            # Create PDF document
-            doc = SimpleDocTemplate(buffer, pagesize=letter, topMargin=0.75*inch, bottomMargin=0.75*inch)
+            # Prepare dataset information
+            dataset_info = {
+                'id': dataset.id,
+                'name': dataset.name,
+                'upload_date': dataset.uploaded_at.strftime('%Y-%m-%d %H:%M:%S'),
+                'total_records': dataset.total_records
+            }
             
-            # Container for PDF elements
-            elements = []
+            # Prepare summary statistics
+            summary_stats = {
+                'avg_flowrate': dataset.avg_flowrate,
+                'avg_pressure': dataset.avg_pressure,
+                'avg_temperature': dataset.avg_temperature
+            }
             
-            # Styles
-            styles = getSampleStyleSheet()
-            title_style = ParagraphStyle(
-                'CustomTitle',
-                parent=styles['Heading1'],
-                fontSize=18,
-                textColor=colors.HexColor('#1a5490'),
-                spaceAfter=30,
-                alignment=TA_CENTER
-            )
-            
-            heading_style = ParagraphStyle(
-                'CustomHeading',
-                parent=styles['Heading2'],
-                fontSize=14,
-                textColor=colors.HexColor('#2c5aa0'),
-                spaceAfter=12,
-                spaceBefore=12
-            )
-            
-            # Title
-            title = Paragraph("Chemical Equipment Parameter Report", title_style)
-            elements.append(title)
-            
-            # Dataset information
-            info_text = f"<b>Dataset:</b> {dataset.name}<br/>"
-            info_text += f"<b>Upload Date:</b> {dataset.uploaded_at.strftime('%Y-%m-%d %H:%M:%S')}<br/>"
-            info_text += f"<b>Total Records:</b> {dataset.total_records}"
-            
-            info_para = Paragraph(info_text, styles['Normal'])
-            elements.append(info_para)
-            elements.append(Spacer(1, 0.3*inch))
-            
-            # Summary Statistics Section
-            summary_heading = Paragraph("Summary Statistics", heading_style)
-            elements.append(summary_heading)
-            
-            summary_data = [
-                ['Metric', 'Value', 'Unit'],
-                ['Average Flowrate', f"{dataset.avg_flowrate:.2f}", 'm³/h'],
-                ['Average Pressure', f"{dataset.avg_pressure:.2f}", 'bar'],
-                ['Average Temperature', f"{dataset.avg_temperature:.2f}", '°C'],
+            # Prepare equipment data as list of dicts
+            equipment_data = [
+                {
+                    'equipment_name': eq.equipment_name,
+                    'equipment_type': eq.equipment_type,
+                    'flowrate': eq.flowrate,
+                    'pressure': eq.pressure,
+                    'temperature': eq.temperature
+                }
+                for eq in equipment_records
             ]
             
-            summary_table = Table(summary_data, colWidths=[2.5*inch, 1.5*inch, 1*inch])
-            summary_table.setStyle(TableStyle([
-                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#4a90e2')),
-                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                ('FONTSIZE', (0, 0), (-1, 0), 12),
-                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-                ('GRID', (0, 0), (-1, -1), 1, colors.black)
-            ]))
+            # Initialize PDF generator
+            pdf_generator = PDFReportGenerator()
             
-            elements.append(summary_table)
-            elements.append(Spacer(1, 0.3*inch))
-            
-            # Equipment Type Distribution
-            type_heading = Paragraph("Equipment Type Distribution", heading_style)
-            elements.append(type_heading)
-            
-            type_data = [['Equipment Type', 'Count', 'Percentage']]
-            for equip_type, count in dataset.type_distribution.items():
-                percentage = (count / dataset.total_records) * 100
-                type_data.append([equip_type, str(count), f"{percentage:.1f}%"])
-            
-            type_table = Table(type_data, colWidths=[2.5*inch, 1*inch, 1*inch])
-            type_table.setStyle(TableStyle([
-                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#4a90e2')),
-                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                ('FONTSIZE', (0, 0), (-1, 0), 12),
-                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-                ('GRID', (0, 0), (-1, -1), 1, colors.black)
-            ]))
-            
-            elements.append(type_table)
-            elements.append(Spacer(1, 0.3*inch))
-            
-            # Equipment Data Table
-            data_heading = Paragraph("Equipment Data", heading_style)
-            elements.append(data_heading)
-            
-            # Prepare equipment data
-            equipment_data = [['Name', 'Type', 'Flowrate', 'Pressure', 'Temp']]
-            
-            for equipment in equipment_records[:50]:  # Limit to first 50 for PDF size
-                equipment_data.append([
-                    equipment.equipment_name[:15],  # Truncate long names
-                    equipment.equipment_type[:12],
-                    f"{equipment.flowrate:.1f}",
-                    f"{equipment.pressure:.1f}",
-                    f"{equipment.temperature:.1f}"
-                ])
-            
-            if equipment_records.count() > 50:
-                equipment_data.append(['...', '(additional records omitted)', '', '', ''])
-            
-            equipment_table = Table(equipment_data, colWidths=[1.2*inch, 1.2*inch, 1*inch, 1*inch, 0.8*inch])
-            equipment_table.setStyle(TableStyle([
-                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#4a90e2')),
-                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                ('FONTSIZE', (0, 0), (-1, -1), 8),
-                ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
-                ('BACKGROUND', (0, 1), (-1, -1), colors.lightgrey),
-                ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
-                ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.lightgrey])
-            ]))
-            
-            elements.append(equipment_table)
-            
-            # Build PDF
-            doc.build(elements)
+            # Generate PDF report
+            pdf_buffer = pdf_generator.generate_report(
+                dataset_info=dataset_info,
+                summary_stats=summary_stats,
+                type_distribution=dataset.type_distribution,
+                equipment_data=equipment_data,
+                include_chart=False  # Optional: can add chart later
+            )
             
             # Get PDF content
-            pdf_content = buffer.getvalue()
-            buffer.close()
+            pdf_content = pdf_buffer.getvalue()
+            pdf_buffer.close()
             
-            # Create response
+            # Create response with proper headers
             response = HttpResponse(pdf_content, content_type='application/pdf')
             
             # SECURITY: Sanitize filename
-            safe_filename = dataset.name.replace(' ', '_').replace('/', '_')[:50]
+            safe_filename = dataset.name.replace(' ', '_').replace('/', '_').replace('\\', '_')[:50]
             response['Content-Disposition'] = f'attachment; filename="equipment_report_{dataset.id}_{safe_filename}.pdf"'
+            response['Content-Length'] = len(pdf_content)
             
             return response
         
         except Exception as e:
-            buffer.close()
-            
             # SECURITY: Don't expose internal errors in production
             if settings.DEBUG:
                 error_detail = str(e)
