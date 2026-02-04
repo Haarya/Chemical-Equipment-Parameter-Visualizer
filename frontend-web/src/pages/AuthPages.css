@@ -1,0 +1,150 @@
+/**
+ * Styles for Authentication Pages - ChemViz Edition
+ * Chemistry lab themed design with sage and forest green
+ */
+
+/* Container */
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: var(--color-sage);
+  padding: var(--space-xl);
+}
+
+/* Card */
+.auth-card {
+  background: var(--color-white);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  padding: var(--space-2xl);
+  width: 100%;
+  max-width: 450px;
+  animation: fadeIn 0.4s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Header */
+.auth-header {
+  text-align: center;
+  margin-bottom: var(--space-2xl);
+}
+
+.auth-icon {
+  margin: 0 auto var(--space-lg);
+  display: block;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.auth-title {
+  font-family: var(--font-serif);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-forest);
+  margin: 0 0 var(--space-xs) 0;
+  letter-spacing: -0.5px;
+}
+
+.auth-subtitle {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--color-gray-500);
+  margin: 0 0 var(--space-lg) 0;
+}
+
+.auth-heading {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-charcoal);
+  margin: var(--space-lg) 0 0 0;
+}
+
+/* Form - Using global styles */
+.auth-form {
+  margin-bottom: var(--space-lg);
+}
+
+/* Footer */
+.auth-footer {
+  text-align: center;
+  padding-top: var(--space-lg);
+  border-top: 1px solid var(--color-gray-200);
+}
+
+.auth-link-text {
+  font-size: 0.9rem;
+  color: var(--color-gray-500);
+  margin: 0;
+}
+
+.auth-link {
+  color: var(--color-forest);
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.auth-link:hover {
+  color: #1a3a2b;
+  text-decoration: underline;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .auth-container {
+    padding: var(--space-lg);
+  }
+
+  .auth-card {
+    padding: var(--space-xl);
+  }
+
+  .auth-icon {
+    width: 60px;
+    height: 60px;
+  }
+
+  .auth-title {
+    font-size: 1.5rem;
+  }
+
+  .auth-heading {
+    font-size: 1.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-container {
+    padding: var(--space-md);
+  }
+
+  .auth-card {
+    padding: var(--space-lg);
+  }
+
+  .auth-icon {
+    width: 50px;
+    height: 50px;
+  }
+}

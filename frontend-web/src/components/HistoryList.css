@@ -1,0 +1,271 @@
+/**
+ * HistoryList Styles
+ * Chemistry-themed dataset history list
+ */
+
+.history-list {
+  width: 100%;
+}
+
+/* Header */
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-md);
+}
+
+.history-title {
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  color: var(--color-forest);
+  margin: 0;
+  font-weight: 600;
+}
+
+.btn-refresh {
+  background: none;
+  border: none;
+  color: var(--color-gray-500);
+  cursor: pointer;
+  padding: var(--space-xs);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.btn-refresh:hover {
+  background: var(--color-sage);
+  color: var(--color-forest);
+  transform: rotate(90deg);
+}
+
+/* Items Container */
+.history-items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+/* Individual Item */
+.history-item {
+  background: white;
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.history-item:hover {
+  border-color: var(--color-forest);
+  box-shadow: var(--shadow-md);
+  transform: translateX(4px);
+}
+
+.history-item-active {
+  border-color: var(--color-forest);
+  background: rgba(47, 92, 70, 0.05);
+  box-shadow: var(--shadow-sm);
+}
+
+.history-item-active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 4px;
+  background: var(--color-forest);
+  border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+}
+
+/* Item Icon */
+.history-item-icon {
+  width: 40px;
+  height: 40px;
+  background: var(--color-sage);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-forest);
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.history-item:hover .history-item-icon {
+  background: var(--color-forest);
+  color: white;
+}
+
+/* Item Content */
+.history-item-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.history-item-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-charcoal);
+  margin: 0 0 var(--space-xs) 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.history-item-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  font-size: 0.8rem;
+  color: var(--color-gray-500);
+  margin: 0;
+  flex-wrap: wrap;
+}
+
+.history-item-date {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.history-item-count {
+  font-weight: 500;
+  color: var(--color-forest);
+}
+
+/* Delete Button */
+.history-item-delete {
+  background: none;
+  border: none;
+  color: var(--color-gray-400);
+  cursor: pointer;
+  padding: var(--space-xs);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  opacity: 0;
+}
+
+.history-item:hover .history-item-delete {
+  opacity: 1;
+}
+
+.history-item-delete:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #DC2626;
+}
+
+/* Footer */
+.history-footer {
+  margin-top: var(--space-md);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--color-gray-200);
+  text-align: center;
+}
+
+.history-note {
+  font-size: 0.85rem;
+  color: var(--color-gray-500);
+  margin: 0;
+  font-style: italic;
+}
+
+/* Loading State */
+.history-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2xl);
+  gap: var(--space-md);
+}
+
+.history-loading p {
+  color: var(--color-gray-600);
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+/* Empty State */
+.history-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2xl);
+  gap: var(--space-md);
+  text-align: center;
+  background: white;
+  border: 2px dashed var(--color-gray-300);
+  border-radius: var(--radius-lg);
+}
+
+.history-empty svg {
+  margin-bottom: var(--space-sm);
+}
+
+.history-empty p {
+  color: var(--color-gray-600);
+  font-size: 1rem;
+  margin: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .history-title {
+    font-size: 1.1rem;
+  }
+
+  .history-item {
+    padding: var(--space-sm) var(--space-md);
+  }
+
+  .history-item-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .history-item-icon svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .history-item-name {
+    font-size: 0.9rem;
+  }
+
+  .history-item-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-xs);
+  }
+
+  .history-item-delete {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .history-header {
+    margin-bottom: var(--space-sm);
+  }
+
+  .history-item {
+    gap: var(--space-sm);
+  }
+
+  .history-item-meta {
+    font-size: 0.75rem;
+  }
+}

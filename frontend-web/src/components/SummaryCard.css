@@ -1,0 +1,265 @@
+/**
+ * SummaryCard Styles
+ * Chemistry-themed metric cards with distinct colors
+ */
+
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-lg);
+  margin: var(--space-lg) 0;
+}
+
+/* Individual Card */
+.summary-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-gray-200);
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.summary-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--accent-color, var(--color-forest));
+  transition: width 0.3s ease;
+}
+
+.summary-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.summary-card:hover::before {
+  width: 6px;
+}
+
+/* Card Icon */
+.summary-card-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--icon-bg, rgba(47, 92, 70, 0.1));
+  color: var(--icon-color, var(--color-forest));
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.summary-card:hover .summary-card-icon {
+  transform: scale(1.05);
+}
+
+/* Card Content */
+.summary-card-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.summary-card-title {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--color-gray-600);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 var(--space-xs) 0;
+}
+
+.summary-card-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--value-color, var(--color-forest));
+  margin: 0;
+  font-family: var(--font-mono);
+  line-height: 1.2;
+}
+
+.summary-card-subtitle {
+  font-size: 0.85rem;
+  color: var(--color-gray-500);
+  margin: var(--space-xs) 0 0 0;
+}
+
+/* Dataset Info Card */
+.summary-card-info {
+  --accent-color: var(--color-forest);
+  --icon-bg: rgba(47, 92, 70, 0.1);
+  --icon-color: var(--color-forest);
+  --value-color: var(--color-charcoal);
+}
+
+.summary-card-info .summary-card-value {
+  font-size: 1.1rem;
+  font-family: var(--font-serif);
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Total Equipment Card */
+.summary-card-count {
+  --accent-color: #2F5C46;
+  --icon-bg: rgba(47, 92, 70, 0.15);
+  --icon-color: #2F5C46;
+  --value-color: #2F5C46;
+}
+
+/* Flowrate Card */
+.summary-card-flowrate {
+  --accent-color: #3CB371;
+  --icon-bg: rgba(60, 179, 113, 0.15);
+  --icon-color: #3CB371;
+  --value-color: #3CB371;
+}
+
+/* Pressure Card */
+.summary-card-pressure {
+  --accent-color: #2E7D32;
+  --icon-bg: rgba(46, 125, 50, 0.15);
+  --icon-color: #2E7D32;
+  --value-color: #2E7D32;
+}
+
+/* Temperature Card */
+.summary-card-temperature {
+  --accent-color: #1B5E20;
+  --icon-bg: rgba(27, 94, 32, 0.15);
+  --icon-color: #1B5E20;
+  --value-color: #1B5E20;
+}
+
+/* Loading State */
+.summary-card-loading {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2xl);
+  gap: var(--space-md);
+  background: white;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.summary-card-loading p {
+  color: var(--color-gray-600);
+  font-size: 1rem;
+  margin: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .summary-cards {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .summary-cards {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-md);
+  }
+
+  .summary-card {
+    padding: var(--space-md);
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .summary-card-icon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .summary-card-icon svg {
+    width: 28px;
+    height: 28px;
+  }
+
+  .summary-card-value {
+    font-size: 1.5rem;
+  }
+
+  .summary-card-title {
+    font-size: 0.75rem;
+  }
+
+  .summary-card-subtitle {
+    font-size: 0.8rem;
+  }
+
+  /* Info card spans full width on mobile */
+  .summary-card-info {
+    grid-column: span 2;
+    flex-direction: row;
+    text-align: left;
+  }
+}
+
+@media (max-width: 480px) {
+  .summary-cards {
+    grid-template-columns: 1fr;
+    gap: var(--space-sm);
+  }
+
+  .summary-card {
+    padding: var(--space-sm) var(--space-md);
+    flex-direction: row;
+    text-align: left;
+  }
+
+  .summary-card-icon {
+    width: 44px;
+    height: 44px;
+  }
+
+  .summary-card-icon svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .summary-card-value {
+    font-size: 1.35rem;
+  }
+
+  .summary-card-info {
+    grid-column: span 1;
+  }
+}
+
+/* Animation for card appearance */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.summary-card {
+  animation: slideInUp 0.4s ease-out;
+}
+
+.summary-card:nth-child(1) { animation-delay: 0s; }
+.summary-card:nth-child(2) { animation-delay: 0.05s; }
+.summary-card:nth-child(3) { animation-delay: 0.1s; }
+.summary-card:nth-child(4) { animation-delay: 0.15s; }
+.summary-card:nth-child(5) { animation-delay: 0.2s; }

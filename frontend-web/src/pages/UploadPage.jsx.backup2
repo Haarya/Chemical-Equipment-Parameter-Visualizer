@@ -1,0 +1,121 @@
+/**
+ * Upload Page - Chemistry Lab Edition
+ * 
+ * Dedicated page for CSV file upload with professional layout
+ */
+
+import React from 'react';
+import Layout from '../components/Layout';
+import FileUpload from '../components/FileUpload';
+
+const UploadPage = () => {
+  const handleUploadSuccess = (dataset) => {
+    console.log('Upload successful:', dataset);
+  };
+
+  return (
+    <Layout>
+      <div className="container">
+        <FileUpload onUploadSuccess={handleUploadSuccess} />
+      </div>
+    </Layout>
+  );
+};
+
+export default UploadPage;
+
+const UploadPage = () => {
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+
+  const handleUploadSuccess = (dataset) => {
+    console.log('Upload successful:', dataset);
+    // Additional actions after successful upload can be added here
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
+
+  const handleBackToDashboard = () => {
+    navigate('/dashboard');
+  };
+
+  return (
+    <div style={{ position: 'relative' }}>
+      {/* Top Bar */}
+      <div style={styles.topBar}>
+        <div style={styles.topBarLeft}>
+          <button onClick={handleBackToDashboard} style={styles.backButton}>
+            ← Back to Dashboard
+          </button>
+        </div>
+        <div style={styles.topBarRight}>
+          <span style={styles.username}>👤 {user?.username}</span>
+          <button onClick={handleLogout} style={styles.logoutButton}>
+            Logout
+          </button>
+        </div>
+      </div>
+
+      {/* File Upload Component */}
+      <FileUpload onUploadSuccess={handleUploadSuccess} />
+    </div>
+  );
+};
+
+const styles = {
+  topBar: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '15px 30px',
+    background: 'rgba(255, 255, 255, 0.95)',
+    backdropFilter: 'blur(10px)',
+    boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
+    zIndex: 100,
+  },
+  topBarLeft: {
+    display: 'flex',
+    alignItems: 'center',
+  },
+  topBarRight: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '15px',
+  },
+  backButton: {
+    padding: '8px 16px',
+    fontSize: '14px',
+    fontWeight: 600,
+    color: '#667eea',
+    background: 'white',
+    border: '2px solid #667eea',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+  },
+  username: {
+    fontSize: '14px',
+    fontWeight: 600,
+    color: '#333',
+  },
+  logoutButton: {
+    padding: '8px 16px',
+    fontSize: '14px',
+    fontWeight: 600,
+    color: 'white',
+    background: '#ff4444',
+    border: 'none',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+  },
+};
+
+export default UploadPage;

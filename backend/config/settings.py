@@ -44,7 +44,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'corsheaders',
-    'django_ratelimit',
+    # 'django_ratelimit',  # Disabled for now - requires Redis/Memcached for production
     
     # Local apps
     'equipment',
@@ -123,6 +123,21 @@ USE_I18N = True
 USE_TZ = True
 
 
+# Cache Configuration (Required for django-ratelimit)
+# Using LocMemCache for development
+# For production, use Redis: 'django_redis.cache.RedisCache'
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-cache',
+    }
+}
+
+# Suppress django-ratelimit warnings for development
+import warnings
+warnings.filterwarnings('ignore', module='django_ratelimit')
+
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
@@ -147,17 +162,27 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Allow React frontend and production domains
 CORS_ALLOWED_ORIGINS = config(
     'CORS_ALLOWED_ORIGINS',
-    default='http://localhost:3000,http://127.0.0.1:3000',
+    default='http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001,http://127.0.0.1:3001',
     cast=lambda v: [s.strip() for s in v.split(',')]
 )
 
 # Allow credentials (cookies, authorization headers)
 CORS_ALLOW_CREDENTIALS = True
 
+# Allow DELETE and other HTTP methods
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
 # CSRF Trusted Origins (for production)
 CSRF_TRUSTED_ORIGINS = config(
     'CSRF_TRUSTED_ORIGINS',
-    default='http://localhost:3000,http://127.0.0.1:3000',
+    default='http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001,http://127.0.0.1:3001',
     cast=lambda v: [s.strip() for s in v.split(',')]
 )
 

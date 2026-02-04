@@ -1,0 +1,434 @@
+/**
+ * FileUpload Component Styles - Chemistry Lab Edition
+ * Professional, clean design with chemistry-themed illustrations
+ */
+
+/* ========================================
+   Upload Container
+   ======================================== */
+.file-upload-wrapper {
+  width: 100%;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.file-upload-card {
+  background: var(--color-white);
+  border-radius: var(--radius-xl);
+  padding: var(--space-2xl);
+  box-shadow: var(--shadow-lg);
+}
+
+/* ========================================
+   Drop Zone
+   ======================================== */
+.drop-zone {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 350px;
+  padding: var(--space-2xl);
+  border: 3px dashed var(--color-gray-300);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-gray-50);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: var(--space-lg);
+}
+
+.drop-zone:hover {
+  border-color: var(--color-forest);
+  background-color: var(--color-sage);
+  transform: translateY(-2px);
+}
+
+.drop-zone.is-dragging {
+  border-color: var(--color-forest);
+  background-color: var(--color-sage);
+  border-style: solid;
+  box-shadow: 0 0 20px rgba(47, 92, 70, 0.2);
+}
+
+.drop-zone.has-file {
+  border-color: var(--color-success);
+  background-color: #ECFDF5;
+}
+
+/* ========================================
+   Flask Illustration with Animations
+   ======================================== */
+.upload-illustration {
+  margin-bottom: var(--space-lg);
+  transition: all 0.3s ease;
+}
+
+.drop-zone:hover .upload-illustration {
+  transform: scale(1.05);
+}
+
+.drop-zone.is-dragging .upload-illustration {
+  transform: scale(1.1);
+  animation: bounce 0.6s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0) scale(1.1);
+  }
+  50% {
+    transform: translateY(-10px) scale(1.1);
+  }
+}
+
+/* Flask Liquid Animation */
+.flask-liquid {
+  animation: liquidWave 2s ease-in-out infinite;
+}
+
+@keyframes liquidWave {
+  0%, 100% {
+    d: path("M35 70 Q60 65 85 70 L85 85 L35 85 Z");
+  }
+  50% {
+    d: path("M35 70 Q60 75 85 70 L85 85 L35 85 Z");
+  }
+}
+
+/* Bubble Animations */
+.bubble {
+  animation: bubbleFloat 3s ease-in-out infinite;
+}
+
+.bubble-1 {
+  animation-delay: 0s;
+}
+
+.bubble-2 {
+  animation-delay: 1s;
+}
+
+.bubble-3 {
+  animation-delay: 2s;
+}
+
+@keyframes bubbleFloat {
+  0%, 100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translateY(-15px);
+    opacity: 0.6;
+  }
+}
+
+/* Upload Arrow Animation */
+.upload-arrow {
+  animation: arrowPulse 2s ease-in-out infinite;
+}
+
+@keyframes arrowPulse {
+  0%, 100% {
+    opacity: 0.6;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-5px);
+  }
+}
+
+/* ========================================
+   Drop Zone Text
+   ======================================== */
+.drop-zone-text {
+  text-align: center;
+}
+
+.drop-zone-title {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  color: var(--color-forest);
+  margin-bottom: var(--space-xs);
+  font-weight: 600;
+}
+
+.drop-zone-subtitle {
+  font-size: 1rem;
+  color: var(--color-gray-500);
+  margin: 0;
+}
+
+/* ========================================
+   File Preview Card
+   ======================================== */
+.file-preview-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  margin-top: var(--space-lg);
+  background-color: var(--color-sage);
+  border: 2px solid var(--color-forest);
+  border-radius: var(--radius-md);
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.file-icon-wrapper {
+  flex-shrink: 0;
+}
+
+.file-info {
+  flex: 1;
+}
+
+.file-name {
+  font-weight: 600;
+  color: var(--color-charcoal);
+  margin: 0 0 var(--space-xs) 0;
+  font-size: 0.95rem;
+}
+
+.file-size {
+  font-size: 0.85rem;
+  color: var(--color-gray-500);
+  margin: 0;
+}
+
+.btn-remove-file {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-white);
+  border: 2px solid var(--color-gray-300);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: var(--color-gray-500);
+}
+
+.btn-remove-file:hover {
+  background-color: var(--color-error);
+  border-color: var(--color-error);
+  color: var(--color-white);
+  transform: rotate(90deg);
+}
+
+/* ========================================
+   Progress Section - Liquid Filling Effect
+   ======================================== */
+.upload-progress-section {
+  margin-top: var(--space-lg);
+  animation: slideIn 0.3s ease-out;
+}
+
+.progress-container {
+  width: 100%;
+}
+
+.progress-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-xs);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-forest);
+}
+
+.progress-percentage {
+  color: var(--color-forest);
+  font-family: var(--font-serif);
+}
+
+.progress-bar-wrapper {
+  height: 24px;
+  background-color: var(--color-gray-100);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 2px solid var(--color-gray-200);
+  position: relative;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, 
+    var(--color-forest) 0%, 
+    #3d7555 50%, 
+    var(--color-forest) 100%
+  );
+  border-radius: var(--radius-lg);
+  transition: width 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Liquid Wave Animation Inside Progress Bar */
+.progress-liquid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  animation: liquidFlow 1.5s ease-in-out infinite;
+}
+
+@keyframes liquidFlow {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* ========================================
+   Upload Button
+   ======================================== */
+.upload-action-btn {
+  width: 100%;
+  margin-top: var(--space-xl);
+  font-size: 1.05rem;
+  padding: var(--space-md) var(--space-xl);
+}
+
+.upload-action-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* ========================================
+   Requirements Section - Lab Notes Style
+   ======================================== */
+.requirements-section {
+  margin-top: var(--space-xl);
+  padding: var(--space-lg);
+  background-color: var(--color-sage);
+  border-left: 4px solid var(--color-forest);
+  border-radius: var(--radius-md);
+}
+
+.requirements-title {
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
+  color: var(--color-forest);
+  margin-bottom: var(--space-md);
+  display: flex;
+  align-items: center;
+}
+
+.requirements-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.requirements-list li {
+  padding: var(--space-xs) 0;
+  font-size: 0.9rem;
+  color: var(--color-charcoal);
+  position: relative;
+  padding-left: var(--space-lg);
+}
+
+.requirements-list li::before {
+  content: '⚗️';
+  position: absolute;
+  left: 0;
+  font-size: 1rem;
+}
+
+.requirements-list li strong {
+  color: var(--color-forest);
+  font-weight: 600;
+}
+
+/* ========================================
+   Responsive Design
+   ======================================== */
+@media (max-width: 768px) {
+  .file-upload-card {
+    padding: var(--space-lg);
+  }
+
+  .drop-zone {
+    min-height: 300px;
+    padding: var(--space-lg);
+  }
+
+  .flask-icon {
+    width: 100px;
+    height: 100px;
+  }
+
+  .drop-zone-title {
+    font-size: 1.25rem;
+  }
+
+  .drop-zone-subtitle {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .file-upload-wrapper {
+    padding: 0 var(--space-sm);
+  }
+
+  .file-upload-card {
+    padding: var(--space-md);
+  }
+
+  .drop-zone {
+    min-height: 250px;
+    padding: var(--space-md);
+  }
+
+  .flask-icon {
+    width: 80px;
+    height: 80px;
+  }
+
+  .drop-zone-title {
+    font-size: 1.1rem;
+  }
+
+  .file-preview-card {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .btn-remove-file {
+    align-self: flex-end;
+  }
+
+  .requirements-section {
+    padding: var(--space-md);
+  }
+
+  .requirements-list li {
+    font-size: 0.85rem;
+  }
+}
