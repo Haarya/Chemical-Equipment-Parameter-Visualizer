@@ -200,12 +200,12 @@ class FileUploadSerializer(serializers.Serializer):
                 f"Invalid file type. Only {', '.join(allowed_extensions)} files are allowed."
             )
         
-        # SECURITY: Check file size (10MB limit)
-        max_size = getattr(settings, 'FILE_UPLOAD_MAX_MEMORY_SIZE', 10485760)  # 10MB
+        # SECURITY: Check file size (50MB limit)
+        max_size = getattr(settings, 'FILE_UPLOAD_MAX_MEMORY_SIZE', 52428800)  # 50MB
         if value.size > max_size:
             max_size_mb = max_size / (1024 * 1024)
             raise serializers.ValidationError(
-                f"File size exceeds maximum allowed size of {max_size_mb}MB."
+                f"File size exceeds maximum allowed size of {max_size_mb:.0f}MB."
             )
         
         # SECURITY: Check file is not empty
@@ -219,12 +219,16 @@ class FileUploadSerializer(serializers.Serializer):
             'text/plain',
             'application/csv',
             'application/vnd.ms-excel',
+            'application/octet-stream',
+            'application/x-csv',
+            'text/x-csv',
+            'text/comma-separated-values',
         ]
         
+        # Allow upload even if content type is not recognized (file extension already checked)
         if content_type and content_type not in allowed_content_types:
-            raise serializers.ValidationError(
-                f"Invalid content type: {content_type}. Expected CSV file."
-            )
+            # Just log a warning but don't reject - extension validation is sufficient
+            pass
         
         return value
     

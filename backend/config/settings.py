@@ -227,15 +227,15 @@ REST_FRAMEWORK = {
 
 
 # SECURITY: File Upload Validation
-# Maximum upload file size: 10MB
-DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10 MB
-FILE_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10 MB
+# Maximum upload file size: 50MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 52428800  # 50 MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 52428800  # 50 MB
 
 # Allowed file extensions for CSV upload
 ALLOWED_UPLOAD_EXTENSIONS = ['.csv']
 
 # Maximum CSV rows to process (prevent DoS)
-MAX_CSV_ROWS = 10000
+MAX_CSV_ROWS = 100000  # 100k rows
 
 
 # SECURITY: Secure Headers (Production)
