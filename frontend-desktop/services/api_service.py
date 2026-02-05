@@ -116,7 +116,22 @@ class APIService:
         url = f"{self.base_url}/api/datasets/"
         response = self.session.get(url)
         response.raise_for_status()
-        return response.json()
+        data = response.json()
+        
+        # Ensure we return a list
+        if isinstance(data, dict):
+            # If response is paginated or wrapped, extract results
+            if 'results' in data:
+                return data['results']
+            # If single error dict, raise exception
+            if 'error' in data or 'detail' in data:
+                raise Exception(data.get('error') or data.get('detail'))
+        
+        if isinstance(data, list):
+            return data
+        
+        # Fallback
+        return []
     
     def get_dataset_detail(self, dataset_id: int) -> Dict[str, Any]:
         """

@@ -53,7 +53,6 @@ const Dashboard = () => {
       }
       setLoading(false);
     } catch (err) {
-      console.error('Error fetching datasets:', err);
       setDatasets([]);
       setLoading(false);
     }
@@ -68,7 +67,6 @@ const Dashboard = () => {
       setSelectedDataset(response.data);
       setEquipmentData(response.data.equipment_records || []);
     } catch (err) {
-      console.error('Error fetching dataset detail:', err);
       setError(err.response?.data?.detail || 'Failed to load dataset');
     } finally {
       setLoading(false);
@@ -103,7 +101,6 @@ const Dashboard = () => {
       link.parentNode.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (err) {
-      console.error('Error downloading PDF:', err);
       alert('Failed to download PDF report: ' + (err.response?.data?.detail || err.message));
     } finally {
       setDownloadingPDF(false);

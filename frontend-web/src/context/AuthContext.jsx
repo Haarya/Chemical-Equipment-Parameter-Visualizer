@@ -52,7 +52,6 @@ export const AuthProvider = ({ children }) => {
           setUser(storedUser);
         }
       } catch (err) {
-        console.error('Error initializing auth:', err);
         // Clear invalid data
         removeAuthToken();
         removeUserInfo();
@@ -138,7 +137,6 @@ export const AuthProvider = ({ children }) => {
       // Call logout API to invalidate token on server
       await logoutUser();
     } catch (err) {
-      console.error('Logout API error:', err);
       // Continue with logout even if API call fails
     } finally {
       // Clear local state and storage

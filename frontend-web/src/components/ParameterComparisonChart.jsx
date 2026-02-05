@@ -1,11 +1,12 @@
 /**
  * ParameterComparisonChart Component
  * 
- * Line chart showing individual equipment parameters with filtering by equipment type.
+ * Scatter/Line chart showing individual equipment parameters with filtering by equipment type.
+ * Optimized for large datasets with smart visualization.
  */
 
 import React, { useState, useMemo } from 'react';
-import { Line } from 'react-chartjs-2';
+import { Scatter, Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -45,36 +46,99 @@ const ParameterComparisonChart = ({ data = [] }) => {
     return data.filter(item => item.equipment_type === selectedType);
   }, [data, selectedType]);
 
-  // Prepare chart data
-  const chartData = useMemo(() => {
-    const labels = filteredData.map((item, index) => item.equipment_name || `Equip-${index + 1}`);
-    const values = filteredData.map(item => item[selectedParameter] || 0);
+  // Check if it's a large dataset
+  const isLargeDataset = filteredData.length > 50;
 
+  // Calculate statistics for large datasets
+  const stats = useMemo(() => {
+    if (filteredData.length === 0) return { avg: 0, min: 0, max: 0 };
+    const values = filteredData.map(item => item[selectedParameter] || 0);
     return {
-      labels,
-      datasets: [{
-        label: getParameterLabel(selectedParameter),
-        data: values,
-        borderColor: 'rgba(99, 102, 241, 1)',
-        backgroundColor: 'rgba(99, 102, 241, 0.1)',
-        borderWidth: 2,
-        pointRadius: 4,
-        pointHoverRadius: 6,
-        pointBackgroundColor: 'rgba(99, 102, 241, 1)',
-        pointBorderColor: '#fff',
-        pointBorderWidth: 2,
-        tension: 0.3,
-        fill: true
-      }]
+      avg: values.reduce((a, b) => a + b, 0) / values.length,
+      min: Math.min(...values),
+      max: Math.max(...values)
     };
   }, [filteredData, selectedParameter]);
 
-  const options = {
+  // Prepare chart data
+  const chartData = useMemo(() => {
+    const values = filteredData.map(item => item[selectedParameter] || 0);
+    
+    if (isLargeDataset) {
+      // For large datasets, limit x-axis labels
+      const step = Math.ceil(filteredData.length / 10);
+      const labels = filteredData.map((item, index) => {
+        if (index % step === 0 || index === filteredData.length - 1) {
+          const name = item.equipment_name || `Eq-${index + 1}`;
+          return name.length > 12 ? name.substring(0, 12) + '...' : name;
+        }
+        return '';
+      });
+
+      return {
+        labels: labels,
+        datasets: [{
+          label: getParameterLabel(selectedParameter),
+          data: values,
+          borderColor: 'transparent',
+          backgroundColor: getParameterColor(selectedParameter, 0.6),
+          borderWidth: 0,
+          pointRadius: 3,
+          pointHoverRadius: 5,
+          pointBackgroundColor: getParameterColor(selectedParameter, 0.7),
+          pointBorderColor: '#fff',
+          pointBorderWidth: 1,
+          tension: 0,
+          fill: false,
+          showLine: false
+        },
+        // Add average line
+        {
+          label: 'Average',
+          data: new Array(filteredData.length).fill(stats.avg),
+          borderColor: getParameterColor(selectedParameter, 0.8),
+          backgroundColor: 'transparent',
+          borderWidth: 2,
+          borderDash: [5, 5],
+          pointRadius: 0,
+          fill: false,
+          showLine: true
+        }]
+      };
+    } else {
+      // Original chart for small datasets
+      const labels = filteredData.map((item, index) => item.equipment_name || `Equip-${index + 1}`);
+      return {
+        labels,
+        datasets: [{
+          label: getParameterLabel(selectedParameter),
+          data: values,
+          borderColor: getParameterColor(selectedParameter, 1),
+          backgroundColor: getParameterColor(selectedParameter, 0.1),
+          borderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          pointBackgroundColor: getParameterColor(selectedParameter, 1),
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          tension: 0.3,
+          fill: true
+        }]
+      };
+    }
+  }, [filteredData, selectedParameter, isLargeDataset, stats.avg]);
+
+  const options = useMemo(() => ({
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        display: false
+        display: isLargeDataset,
+        position: 'top',
+        labels: {
+          usePointStyle: true,
+          boxWidth: 8
+        }
       },
       tooltip: {
         backgroundColor: 'rgba(31, 41, 55, 0.95)',
@@ -89,7 +153,14 @@ const ParameterComparisonChart = ({ data = [] }) => {
         padding: 10,
         cornerRadius: 8,
         callbacks: {
+          title: function(context) {
+            const index = context[0].dataIndex;
+            return filteredData[index]?.equipment_name || `Equipment ${index + 1}`;
+          },
           label: function(context) {
+            if (context.dataset.label === 'Average') {
+              return `Average: ${context.parsed.y.toFixed(2)}`;
+            }
             return `${getParameterLabel(selectedParameter)}: ${context.parsed.y.toFixed(2)}`;
           }
         }
@@ -102,16 +173,24 @@ const ParameterComparisonChart = ({ data = [] }) => {
         },
         ticks: {
           font: {
-            size: 10,
+            size: isLargeDataset ? 9 : 10,
             family: "'Inter', sans-serif"
           },
           color: '#6B7280',
           maxRotation: 45,
-          minRotation: 45
+          minRotation: 45,
+          autoSkip: isLargeDataset,
+          maxTicksLimit: isLargeDataset ? 10 : undefined
+        },
+        title: {
+          display: isLargeDataset,
+          text: `Equipment (Total: ${filteredData.length})`,
+          font: { size: 11 },
+          color: '#6B7280'
         }
       },
       y: {
-        beginAtZero: true,
+        beginAtZero: false,
         grid: {
           color: 'rgba(0, 0, 0, 0.05)',
           drawBorder: false
@@ -125,10 +204,16 @@ const ParameterComparisonChart = ({ data = [] }) => {
           callback: function(value) {
             return value.toFixed(0);
           }
+        },
+        title: {
+          display: true,
+          text: getParameterLabel(selectedParameter),
+          font: { size: 11 },
+          color: '#6B7280'
         }
       }
     }
-  };
+  }), [isLargeDataset, filteredData, selectedParameter]);
 
   function getParameterLabel(param) {
     const labels = {
@@ -137,6 +222,15 @@ const ParameterComparisonChart = ({ data = [] }) => {
       temperature: 'Temperature (°C)'
     };
     return labels[param] || param;
+  }
+
+  function getParameterColor(param, alpha = 1) {
+    const colors = {
+      flowrate: `rgba(59, 130, 246, ${alpha})`,  // Blue
+      pressure: `rgba(249, 115, 22, ${alpha})`,  // Orange
+      temperature: `rgba(239, 68, 68, ${alpha})` // Red
+    };
+    return colors[param] || `rgba(99, 102, 241, ${alpha})`;
   }
 
   if (!data || data.length === 0) {
@@ -184,7 +278,10 @@ const ParameterComparisonChart = ({ data = [] }) => {
         <Line data={chartData} options={options} />
       </div>
       <div className="chart-summary">
-        <p>Showing {filteredData.length} equipment{filteredData.length !== 1 ? 's' : ''}</p>
+        <p>
+          Showing {filteredData.length} equipment{filteredData.length !== 1 ? 's' : ''}
+          {isLargeDataset && ` | Avg: ${stats.avg.toFixed(1)} | Range: ${stats.min.toFixed(1)} - ${stats.max.toFixed(1)}`}
+        </p>
       </div>
     </div>
   );

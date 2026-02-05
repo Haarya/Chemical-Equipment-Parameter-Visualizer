@@ -9,8 +9,8 @@ import Layout from '../components/Layout';
 import FileUpload from '../components/FileUpload';
 
 const UploadPage = () => {
-  const handleUploadSuccess = (dataset) => {
-    console.log('Upload successful:', dataset);
+  const handleUploadSuccess = () => {
+    // Upload success is handled by FileUpload component's navigation
   };
 
   return (

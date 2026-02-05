@@ -1,16 +1,25 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
+from django.contrib.auth.models import User
 import json
 
 
 class Dataset(models.Model):
     """
     Model to store dataset metadata and summary statistics.
-    Automatically enforces keeping only the last 5 uploaded datasets.
+    Automatically enforces keeping only the last 5 uploaded datasets per user.
     
     SECURITY: Input validation on all fields with appropriate constraints.
     """
+    # User who uploaded this dataset
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='datasets',
+        help_text="User who uploaded this dataset"
+    )
+    
     # SECURITY: Filename validation - max length 255 chars
     name = models.CharField(
         max_length=255,
@@ -98,7 +107,7 @@ class Dataset(models.Model):
     
     def save(self, *args, **kwargs):
         """
-        Override save to enforce keeping only last 5 datasets.
+        Override save to enforce keeping only last 5 datasets per user.
         Automatically deletes oldest datasets when limit is exceeded.
         """
         # Run validation
@@ -107,24 +116,25 @@ class Dataset(models.Model):
         # Save the current dataset
         super().save(*args, **kwargs)
         
-        # Enforce maximum 5 datasets rule
-        self.enforce_dataset_limit()
+        # Enforce maximum 5 datasets rule per user
+        self.enforce_dataset_limit(user=self.user)
     
     @classmethod
-    def enforce_dataset_limit(cls, max_datasets=5):
+    def enforce_dataset_limit(cls, user, max_datasets=5):
         """
-        BUSINESS LOGIC: Keep only the last 5 uploaded datasets.
+        BUSINESS LOGIC: Keep only the last 5 uploaded datasets per user.
         Deletes oldest datasets when limit is exceeded.
         
         Args:
+            user: The user whose datasets to check
             max_datasets (int): Maximum number of datasets to keep (default: 5)
         """
-        total_count = cls.objects.count()
+        total_count = cls.objects.filter(user=user).count()
         
         if total_count > max_datasets:
-            # Get datasets to delete (oldest ones)
+            # Get datasets to delete (oldest ones for this user)
             excess_count = total_count - max_datasets
-            datasets_to_delete = cls.objects.order_by('uploaded_at')[:excess_count]
+            datasets_to_delete = cls.objects.filter(user=user).order_by('uploaded_at')[:excess_count]
             
             # Delete excess datasets (cascade will delete related Equipment records)
             for dataset in datasets_to_delete:

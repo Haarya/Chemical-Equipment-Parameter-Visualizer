@@ -20,7 +20,7 @@ const FileUpload = ({ onUploadSuccess }) => {
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
 
-  const MAX_FILE_SIZE = 10 * 1024 * 1024;
+  const MAX_FILE_SIZE = 50 * 1024 * 1024;
 
   const validateFile = (file) => {
     if (!file) {

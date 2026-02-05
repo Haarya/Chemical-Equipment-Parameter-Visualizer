@@ -269,3 +269,19 @@
     font-size: 0.75rem;
   }
 }
+
+/* Small spinner for delete button */
+.spinner-small {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--color-gray-300);
+  border-top-color: var(--color-coral);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

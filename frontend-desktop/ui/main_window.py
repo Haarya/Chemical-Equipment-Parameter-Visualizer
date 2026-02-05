@@ -184,9 +184,6 @@ class MainWindow(QMainWindow):
         # Load history tab datasets
         self.history_tab.load_datasets()
         
-        # Refresh dashboard datasets
-        self.dashboard_tab.refresh_datasets()
-        
         # Show success message
         QMessageBox.information(
             self, 

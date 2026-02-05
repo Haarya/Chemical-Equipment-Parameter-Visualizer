@@ -97,14 +97,18 @@ class DashboardTab(QWidget):
         
         # Main content with splitters
         main_splitter = QSplitter(Qt.Vertical)
+        main_splitter.setChildrenCollapsible(False)
         
         # Top section: Summary
         self.summary_widget = SummaryWidget()
+        self.summary_widget.setMinimumHeight(120)
+        self.summary_widget.setMaximumHeight(150)
         main_splitter.addWidget(self.summary_widget)
         
         # Middle section: Charts
         charts_widget = QWidget()
         charts_layout = QVBoxLayout()
+        charts_layout.setSpacing(15)
         charts_layout.setContentsMargins(0, 0, 0, 0)
         
         # Charts title
@@ -115,16 +119,32 @@ class DashboardTab(QWidget):
         charts_title.setFont(charts_title_font)
         charts_layout.addWidget(charts_title)
         
-        # Charts row 1: Pie and Bar charts
+        # Charts row 1: Pie and Bar charts in horizontal layout
+        charts_row1_widget = QWidget()
         charts_row1 = QHBoxLayout()
+        charts_row1.setSpacing(10)
         
+        # Pie chart container
+        pie_container = QGroupBox("Equipment Type Distribution")
+        pie_layout = QVBoxLayout()
         self.pie_chart = PieChart(width=5, height=4)
-        charts_row1.addWidget(self.pie_chart)
+        self.pie_chart.setMinimumSize(400, 300)
+        pie_layout.addWidget(self.pie_chart)
+        pie_container.setLayout(pie_layout)
+        charts_row1.addWidget(pie_container)
         
+        # Bar chart container
+        bar_container = QGroupBox("Average Parameters")
+        bar_layout = QVBoxLayout()
         self.bar_chart = BarChart(width=5, height=4)
-        charts_row1.addWidget(self.bar_chart)
+        self.bar_chart.setMinimumSize(400, 300)
+        bar_layout.addWidget(self.bar_chart)
+        bar_container.setLayout(bar_layout)
+        charts_row1.addWidget(bar_container)
         
-        charts_layout.addLayout(charts_row1)
+        charts_row1_widget.setLayout(charts_row1)
+        charts_row1_widget.setMinimumHeight(350)
+        charts_layout.addWidget(charts_row1_widget)
         
         # Charts row 2: Parameter chart with controls
         param_group = QGroupBox("Parameter Trends")
@@ -151,20 +171,40 @@ class DashboardTab(QWidget):
         param_layout.addLayout(param_controls)
         
         self.param_chart = ParameterChart(width=10, height=4)
+        self.param_chart.setMinimumSize(800, 300)
         param_layout.addWidget(self.param_chart)
         
         param_group.setLayout(param_layout)
+        param_group.setMinimumHeight(380)
         charts_layout.addWidget(param_group)
         
         charts_widget.setLayout(charts_layout)
         main_splitter.addWidget(charts_widget)
         
         # Bottom section: Data table
-        self.data_table = DataTableWidget()
-        main_splitter.addWidget(self.data_table)
+        table_widget = QWidget()
+        table_layout = QVBoxLayout()
+        table_layout.setContentsMargins(0, 0, 0, 0)
         
-        # Set initial splitter sizes (summary:charts:table = 1:3:2)
-        main_splitter.setSizes([150, 600, 400])
+        table_title = QLabel("Equipment Data Table")
+        table_title_font = QFont()
+        table_title_font.setPointSize(13)
+        table_title_font.setBold(True)
+        table_title.setFont(table_title_font)
+        table_layout.addWidget(table_title)
+        
+        self.data_table = DataTableWidget()
+        self.data_table.setMinimumHeight(200)
+        table_layout.addWidget(self.data_table)
+        
+        table_widget.setLayout(table_layout)
+        main_splitter.addWidget(table_widget)
+        
+        # Set initial splitter sizes (summary:charts:table)
+        main_splitter.setSizes([140, 750, 250])
+        main_splitter.setStretchFactor(0, 0)  # Summary doesn't stretch
+        main_splitter.setStretchFactor(1, 3)  # Charts get most space
+        main_splitter.setStretchFactor(2, 1)  # Table gets some space
         
         layout.addWidget(main_splitter)
         

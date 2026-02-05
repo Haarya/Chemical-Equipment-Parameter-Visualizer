@@ -219,8 +219,8 @@ class CSVUploadView(APIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
             
-            # Save Dataset
-            dataset = dataset_serializer.save()
+            # Save Dataset with the logged-in user
+            dataset = dataset_serializer.save(user=request.user)
             
             # Create Equipment records in bulk
             equipment_records = []
@@ -299,11 +299,11 @@ class DatasetListView(generics.ListAPIView):
     
     def get_queryset(self):
         """
-        Return last 5 datasets ordered by upload date (most recent first).
+        Return last 5 datasets for the logged-in user, ordered by upload date (most recent first).
         
-        SECURITY: Only return datasets, no filtering to prevent information disclosure.
+        SECURITY: Only return datasets owned by the authenticated user.
         """
-        return Dataset.objects.all().order_by('-uploaded_at')[:5]
+        return Dataset.objects.filter(user=self.request.user).order_by('-uploaded_at')[:5]
 
 
 class DatasetDetailView(generics.RetrieveAPIView):
@@ -322,16 +322,19 @@ class DatasetDetailView(generics.RetrieveAPIView):
     
     serializer_class = DatasetDetailSerializer
     permission_classes = [IsAuthenticated]
-    queryset = Dataset.objects.all()
+    
+    def get_queryset(self):
+        """Only return datasets owned by the authenticated user."""
+        return Dataset.objects.filter(user=self.request.user)
     
     def get_object(self):
         """
-        Retrieve dataset by ID.
+        Retrieve dataset by ID for the logged-in user.
         
-        SECURITY: Returns 404 if not found (prevents information disclosure).
+        SECURITY: Returns 404 if not found or not owned by user.
         """
         dataset_id = self.kwargs.get('pk')
-        return get_object_or_404(Dataset, pk=dataset_id)
+        return get_object_or_404(Dataset, pk=dataset_id, user=self.request.user)
 
 
 class DatasetDeleteView(generics.DestroyAPIView):
@@ -349,16 +352,19 @@ class DatasetDeleteView(generics.DestroyAPIView):
     """
     
     permission_classes = [IsAuthenticated]
-    queryset = Dataset.objects.all()
+    
+    def get_queryset(self):
+        """Only return datasets owned by the authenticated user."""
+        return Dataset.objects.filter(user=self.request.user)
     
     def get_object(self):
         """
         Retrieve dataset by ID for deletion.
         
-        SECURITY: Returns 404 if not found.
+        SECURITY: Returns 404 if not found or not owned by user.
         """
         dataset_id = self.kwargs.get('pk')
-        return get_object_or_404(Dataset, pk=dataset_id)
+        return get_object_or_404(Dataset, pk=dataset_id, user=self.request.user)
 
 
 class DatasetSummaryView(APIView):
@@ -379,10 +385,10 @@ class DatasetSummaryView(APIView):
     
     def get(self, request, pk):
         """
-        Get summary statistics for a specific dataset.
+        Get summary statistics for a specific dataset owned by the user.
         """
-        # SECURITY: Validate ID and return 404 if not found
-        dataset = get_object_or_404(Dataset, pk=pk)
+        # SECURITY: Validate ID and user ownership, return 404 if not found
+        dataset = get_object_or_404(Dataset, pk=pk, user=request.user)
         
         serializer = DatasetSummarySerializer(dataset)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -409,10 +415,10 @@ class GeneratePDFReportView(APIView):
     
     def get(self, request, pk):
         """
-        Generate and return PDF report for a specific dataset.
+        Generate and return PDF report for a specific dataset owned by the user.
         """
-        # SECURITY: Validate ID
-        dataset = get_object_or_404(Dataset, pk=pk)
+        # SECURITY: Validate ID and user ownership
+        dataset = get_object_or_404(Dataset, pk=pk, user=request.user)
         
         # Get equipment records
         equipment_records = Equipment.objects.filter(dataset=dataset).order_by('equipment_name')

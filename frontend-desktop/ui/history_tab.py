@@ -3,6 +3,7 @@ History Tab for Chemical Equipment Visualizer Desktop Application
 Displays last 5 uploaded datasets
 """
 
+import logging
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
                               QListWidget, QListWidgetItem, QLabel, QFrame,
                               QMessageBox, QSizePolicy)
@@ -11,6 +12,9 @@ from PyQt5.QtGui import QFont
 from services.api_service import APIService
 import requests
 from datetime import datetime
+
+# Set up logging
+logger = logging.getLogger(__name__)
 
 
 class DatasetListItem(QWidget):
@@ -217,6 +221,11 @@ class HistoryTab(QWidget):
         try:
             # Fetch datasets from API
             datasets = self.api_service.get_datasets()
+            
+            # Validate response
+            if not isinstance(datasets, list):
+                raise ValueError(f"Expected list of datasets, got {type(datasets).__name__}")
+            
             self.datasets = datasets
             
             # Clear list
@@ -230,6 +239,11 @@ class HistoryTab(QWidget):
             
             # Add datasets to list
             for dataset in datasets:
+                # Validate dataset is a dictionary
+                if not isinstance(dataset, dict):
+                    logger.warning(f"Invalid dataset format: {type(dataset)}")
+                    continue
+                
                 # Create custom widget
                 item_widget = DatasetListItem(dataset)
                 item_widget.delete_clicked.connect(self.delete_dataset)
