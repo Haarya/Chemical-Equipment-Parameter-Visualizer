@@ -108,8 +108,8 @@ const DataTable = ({ data = [], loading = false }) => {
     return (
       <div className="data-table-container">
         <div className="data-table-loading">
-          <span className="spinner"></span>
-          <p>Loading equipment data...</p>
+          <div className="skeleton-line skeleton-line-md"></div>
+          <div className="skeleton-table"></div>
         </div>
       </div>
     );

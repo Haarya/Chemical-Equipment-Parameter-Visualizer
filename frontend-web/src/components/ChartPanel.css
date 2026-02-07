@@ -171,6 +171,13 @@
   font-size: 1.1rem;
 }
 
+/* Skeleton Cards */
+.chart-item-skeleton {
+  min-height: 260px;
+  border: 1px solid var(--color-gray-200);
+  box-shadow: var(--shadow-sm);
+}
+
 /* Panel Empty State */
 .chart-panel-empty {
   display: flex;

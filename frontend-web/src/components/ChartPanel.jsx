@@ -14,9 +14,10 @@ const ChartPanel = ({ data = [], loading = false }) => {
   if (loading) {
     return (
       <div className="chart-panel">
-        <div className="chart-panel-loading">
-          <span className="spinner"></span>
-          <p>Loading charts...</p>
+        <div className="chart-grid">
+          <div className="chart-item chart-item-skeleton"></div>
+          <div className="chart-item chart-item-skeleton"></div>
+          <div className="chart-item chart-item-skeleton chart-item-wide"></div>
         </div>
       </div>
     );

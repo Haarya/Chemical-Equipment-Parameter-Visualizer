@@ -157,6 +157,11 @@
   font-size: 1rem;
 }
 
+/* Skeleton Table */
+.data-table-loading .skeleton-line {
+  align-self: flex-start;
+}
+
 /* Empty State */
 .data-table-empty {
   display: flex;

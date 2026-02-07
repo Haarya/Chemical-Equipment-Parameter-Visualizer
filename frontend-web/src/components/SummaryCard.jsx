@@ -50,10 +50,16 @@ const SummaryCard = ({ data = [], datasetInfo = null, loading = false }) => {
   if (loading) {
     return (
       <div className="summary-cards">
-        <div className="summary-card-loading">
-          <span className="spinner"></span>
-          <p>Loading summary...</p>
-        </div>
+        {Array.from({ length: 5 }).map((_, index) => (
+          <div key={index} className="summary-card summary-card-skeleton">
+            <div className="skeleton-circle"></div>
+            <div className="summary-card-content">
+              <div className="skeleton-line skeleton-line-sm"></div>
+              <div className="skeleton-line skeleton-line-lg"></div>
+              <div className="skeleton-line skeleton-line-md"></div>
+            </div>
+          </div>
+        ))}
       </div>
     );
   }

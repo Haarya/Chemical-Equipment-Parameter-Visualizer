@@ -162,6 +162,12 @@
   margin: 0;
 }
 
+/* Skeleton Card */
+.summary-card-skeleton {
+  gap: var(--space-lg);
+  pointer-events: none;
+}
+
 /* Responsive Design */
 @media (max-width: 1200px) {
   .summary-cards {

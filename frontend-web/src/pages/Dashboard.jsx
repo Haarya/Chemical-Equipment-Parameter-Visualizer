@@ -22,7 +22,8 @@ const Dashboard = () => {
   const [datasets, setDatasets] = useState([]);
   const [selectedDataset, setSelectedDataset] = useState(null);
   const [equipmentData, setEquipmentData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loadingList, setLoadingList] = useState(true);
+  const [loadingDetail, setLoadingDetail] = useState(false);
   const [error, setError] = useState('');
   const [downloadingPDF, setDownloadingPDF] = useState(false);
 
@@ -41,6 +42,7 @@ const Dashboard = () => {
 
   const fetchDatasets = async () => {
     try {
+      setLoadingList(true);
       const response = await api.get('/api/datasets/');
       // Handle both array and paginated response formats
       const data = response.data;
@@ -51,16 +53,16 @@ const Dashboard = () => {
       } else {
         setDatasets([]);
       }
-      setLoading(false);
     } catch (err) {
       setDatasets([]);
-      setLoading(false);
+    } finally {
+      setLoadingList(false);
     }
   };
 
   const fetchDatasetDetail = async (datasetId) => {
     try {
-      setLoading(true);
+      setLoadingDetail(true);
       setError('');
       
       const response = await api.get(`/api/datasets/${datasetId}/`);
@@ -69,7 +71,7 @@ const Dashboard = () => {
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to load dataset');
     } finally {
-      setLoading(false);
+      setLoadingDetail(false);
     }
   };
 
@@ -111,12 +113,34 @@ const Dashboard = () => {
     navigate('/upload');
   };
 
-  if (loading && !selectedDataset) {
+  const isInitialLoading = loadingList && !selectedDataset && datasets.length === 0;
+
+  if (isInitialLoading) {
     return (
       <Layout>
-        <div className="dashboard-loading">
-          <span className="spinner"></span>
-          <p>Loading dashboard...</p>
+        <div className="dashboard-skeleton">
+          <div className="dashboard-skeleton-header">
+            <div className="skeleton-line skeleton-line-xl"></div>
+            <div className="skeleton-line skeleton-line-lg"></div>
+          </div>
+          <div className="dashboard-skeleton-actions">
+            <div className="skeleton-pill"></div>
+            <div className="skeleton-pill"></div>
+          </div>
+          <div className="dashboard-skeleton-cards">
+            {Array.from({ length: 5 }).map((_, index) => (
+              <div key={index} className="skeleton-card"></div>
+            ))}
+          </div>
+          <div className="dashboard-skeleton-charts">
+            <div className="skeleton-panel"></div>
+            <div className="skeleton-panel"></div>
+            <div className="skeleton-panel skeleton-panel-wide"></div>
+          </div>
+          <div className="dashboard-skeleton-table">
+            <div className="skeleton-line skeleton-line-md"></div>
+            <div className="skeleton-table"></div>
+          </div>
         </div>
       </Layout>
     );
@@ -217,13 +241,13 @@ const Dashboard = () => {
           <SummaryCard 
             data={equipmentData}
             datasetInfo={selectedDataset}
-            loading={loading}
+            loading={loadingDetail}
           />
 
           {/* Charts Panel */}
           <ChartPanel 
             data={equipmentData}
-            loading={loading}
+            loading={loadingDetail}
           />
 
           {/* Data Table */}
@@ -231,7 +255,7 @@ const Dashboard = () => {
             <h2 className="section-title">Equipment Data</h2>
             <DataTable 
               data={equipmentData}
-              loading={loading}
+              loading={loadingDetail}
             />
           </div>
         </div>

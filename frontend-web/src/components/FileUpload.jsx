@@ -145,6 +145,10 @@ const FileUpload = ({ onUploadSuccess }) => {
       setUploadProgress(0);
       
       let errorMessage = 'Upload failed. Please try again.';
+
+      if (error.response?.status === 401) {
+        errorMessage = 'Please log in to upload a dataset.';
+      }
       
       if (error.response?.data) {
         const errorData = error.response.data;
