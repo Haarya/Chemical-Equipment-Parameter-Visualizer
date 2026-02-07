@@ -11,7 +11,7 @@ SECURITY: All views implement OWASP best practices:
 from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated
 from django.http import FileResponse, HttpResponse
 from django.conf import settings
 from django.shortcuts import get_object_or_404
@@ -48,10 +48,10 @@ class CSVUploadView(APIView):
     - Row limit enforcement (prevent DoS)
     - Automatic cleanup (keep last 5 datasets)
     
-    Authentication: Optional (set to AllowAny, change to IsAuthenticated if needed)
+    Authentication: Required
     """
     
-    permission_classes = [AllowAny]  # Change to [IsAuthenticated] to require login
+    permission_classes = [IsAuthenticated]
     # Rate limiting: Applied via DRF throttling in settings
     
     def post(self, request):
