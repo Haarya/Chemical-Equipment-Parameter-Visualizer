@@ -27,18 +27,23 @@ const Dashboard = () => {
   const [error, setError] = useState('');
   const [downloadingPDF, setDownloadingPDF] = useState(false);
 
+  // Track which dataset ID is currently loaded to prevent re-fetching
+  const [loadedDatasetId, setLoadedDatasetId] = useState(null);
+
   useEffect(() => {
     fetchDatasets();
   }, []);
 
   useEffect(() => {
-    if (id) {
-      fetchDatasetDetail(id);
-    } else if (datasets.length > 0 && !selectedDataset) {
-      // Auto-select most recent dataset
-      fetchDatasetDetail(datasets[0].id);
-    }
-  }, [id, datasets, selectedDataset]);
+    // Determine which dataset to load
+    const targetId = id || (datasets.length > 0 ? String(datasets[0].id) : null);
+    
+    // Skip if no target or already loaded this exact dataset
+    if (!targetId || String(targetId) === String(loadedDatasetId)) return;
+    
+    fetchDatasetDetail(targetId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, datasets, loadedDatasetId]);
 
   const fetchDatasets = async () => {
     try {
@@ -68,6 +73,7 @@ const Dashboard = () => {
       const response = await api.get(`/api/datasets/${datasetId}/`);
       setSelectedDataset(response.data);
       setEquipmentData(response.data.equipment_records || []);
+      setLoadedDatasetId(String(datasetId));
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to load dataset');
     } finally {
