@@ -37,7 +37,7 @@ const Dashboard = () => {
       // Auto-select most recent dataset
       fetchDatasetDetail(datasets[0].id);
     }
-  }, [id, datasets]);
+  }, [id, datasets, selectedDataset]);
 
   const fetchDatasets = async () => {
     try {
