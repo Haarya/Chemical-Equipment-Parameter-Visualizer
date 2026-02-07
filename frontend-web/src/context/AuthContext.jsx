@@ -84,9 +84,16 @@ export const AuthProvider = ({ children }) => {
 
       return response.user;
     } catch (err) {
-      const errorMessage = err.response?.data?.error || 
-                          err.response?.data?.detail || 
-                          'Login failed. Please check your credentials.';
+      let errorMessage;
+      if (err.response?.data) {
+        errorMessage = err.response.data.error || 
+                      err.response.data.detail || 
+                      JSON.stringify(err.response.data);
+      } else if (err.request) {
+        errorMessage = 'Cannot reach the server. Please check your connection and try again.';
+      } else {
+        errorMessage = err.message || 'Login failed. Please check your credentials.';
+      }
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {
@@ -116,10 +123,18 @@ export const AuthProvider = ({ children }) => {
 
       return response.user;
     } catch (err) {
-      const errorMessage = err.response?.data?.error || 
-                          err.response?.data?.detail ||
-                          err.response?.data?.details ||
-                          'Registration failed. Please try again.';
+      let errorMessage;
+      if (err.response?.data) {
+        errorMessage = err.response.data.error || 
+                      err.response.data.detail ||
+                      err.response.data.details ||
+                      JSON.stringify(err.response.data);
+      } else if (err.request) {
+        // Request was made but no response received (network/CORS error)
+        errorMessage = 'Cannot reach the server. Please check your connection and try again.';
+      } else {
+        errorMessage = err.message || 'Registration failed. Please try again.';
+      }
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {

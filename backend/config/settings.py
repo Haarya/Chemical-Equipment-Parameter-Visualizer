@@ -160,12 +160,21 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # ===================================
 
 # CORS Configuration
-# Allow React frontend and production domains
+# In production, allow all origins from the Vercel deployment
+# (Vercel generates unique URLs per deployment)
+CORS_ALLOW_ALL_ORIGINS = config('CORS_ALLOW_ALL_ORIGINS', default=False, cast=bool)
+
+# Fallback: explicit origins for local development
 CORS_ALLOWED_ORIGINS = config(
     'CORS_ALLOWED_ORIGINS',
     default='http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001,http://127.0.0.1:3001',
     cast=lambda v: [s.strip() for s in v.split(',')]
 )
+
+# Allow Vercel preview deployments via regex
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r'^https://.*\.vercel\.app$',
+]
 
 # Allow credentials (cookies, authorization headers)
 CORS_ALLOW_CREDENTIALS = True
@@ -178,6 +187,17 @@ CORS_ALLOW_METHODS = [
     'PATCH',
     'POST',
     'PUT',
+]
+
+# Explicitly allow common request headers
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'authorization',
+    'content-type',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
 ]
 
 # CSRF Trusted Origins (for production)
