@@ -51,6 +51,7 @@ class RegisterView(APIView):
     """
     
     permission_classes = [AllowAny]
+    throttle_classes = []  # Exempt auth endpoints from rate limiting
     
     def post(self, request):
         """
@@ -174,6 +175,7 @@ class LoginView(APIView):
     """
     
     permission_classes = [AllowAny]
+    throttle_classes = []  # Exempt auth endpoints from rate limiting
     
     def post(self, request):
         """

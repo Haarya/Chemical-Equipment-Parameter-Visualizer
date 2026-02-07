@@ -207,8 +207,8 @@ REST_FRAMEWORK = {
         'rest_framework.throttling.UserRateThrottle',
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'anon': config('THROTTLE_ANON', default='20/hour'),  # Anonymous users: 20 req/hour
-        'user': config('THROTTLE_USER', default='100/hour'),  # Authenticated: 100 req/hour
+        'anon': config('THROTTLE_ANON', default='500/hour'),  # Anonymous users
+        'user': config('THROTTLE_USER', default='2000/hour'),  # Authenticated users
     },
     
     # Pagination for large datasets
@@ -241,6 +241,9 @@ MAX_CSV_ROWS = 100000  # 100k rows
 
 # SECURITY: Secure Headers (Production)
 if not DEBUG:
+    # CRITICAL: Tell Django to trust X-Forwarded-Proto from Render's reverse proxy
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    
     # HTTPS enforcement
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True

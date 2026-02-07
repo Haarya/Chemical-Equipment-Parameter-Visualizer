@@ -44,7 +44,11 @@ api.interceptors.response.use(
   },
   (error) => {
     // Handle 401 Unauthorized - Token expired or invalid
-    if (error.response && error.response.status === 401) {
+    // Skip redirect for auth endpoints (login/register) to avoid loops
+    const requestUrl = error.config?.url || '';
+    const isAuthEndpoint = requestUrl.includes('/api/auth/');
+    
+    if (error.response && error.response.status === 401 && !isAuthEndpoint) {
       localStorage.removeItem('authToken');
       localStorage.removeItem('user');
       window.location.href = '/login';
