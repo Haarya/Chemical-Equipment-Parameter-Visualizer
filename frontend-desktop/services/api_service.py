@@ -2,20 +2,27 @@
 API Service for communicating with Django backend
 """
 
+import os
 import requests
 from typing import Optional, Dict, Any, List
+
+# Production backend URL (can be overridden via CHEMVIZ_API_URL env var)
+DEFAULT_API_URL = "https://chemical-equipment-parameter-visualizer-sias.onrender.com"
 
 
 class APIService:
     """Handle all API requests to Django backend"""
     
-    def __init__(self, base_url: str = "http://localhost:8000"):
+    def __init__(self, base_url: str = None):
         """
         Initialize API service
         
         Args:
-            base_url: Base URL of the Django backend
+            base_url: Base URL of the Django backend.
+                      Falls back to CHEMVIZ_API_URL env var, then DEFAULT_API_URL.
         """
+        if base_url is None:
+            base_url = os.environ.get("CHEMVIZ_API_URL", DEFAULT_API_URL)
         self.base_url = base_url.rstrip('/')
         self.token = None
         self.session = requests.Session()

@@ -5,7 +5,7 @@
  * Includes sidebar for dataset history navigation.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Layout from '../components/Layout';
 import SummaryCard from '../components/SummaryCard';
@@ -27,45 +27,12 @@ const Dashboard = () => {
   const [error, setError] = useState('');
   const [downloadingPDF, setDownloadingPDF] = useState(false);
 
-  // Track which dataset ID is currently loaded to prevent re-fetching
-  const [loadedDatasetId, setLoadedDatasetId] = useState(null);
+  // Ref to prevent concurrent fetches
+  const fetchingRef = useRef(false);
 
-  useEffect(() => {
-    fetchDatasets();
-  }, []);
-
-  useEffect(() => {
-    // Determine which dataset to load
-    const targetId = id || (datasets.length > 0 ? String(datasets[0].id) : null);
-    
-    // Skip if no target or already loaded this exact dataset
-    if (!targetId || String(targetId) === String(loadedDatasetId)) return;
-    
-    fetchDatasetDetail(targetId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, datasets, loadedDatasetId]);
-
-  const fetchDatasets = async () => {
-    try {
-      setLoadingList(true);
-      const response = await api.get('/api/datasets/');
-      // Handle both array and paginated response formats
-      const data = response.data;
-      if (Array.isArray(data)) {
-        setDatasets(data);
-      } else if (data && Array.isArray(data.results)) {
-        setDatasets(data.results);
-      } else {
-        setDatasets([]);
-      }
-    } catch (err) {
-      setDatasets([]);
-    } finally {
-      setLoadingList(false);
-    }
-  };
-
-  const fetchDatasetDetail = async (datasetId) => {
+  const fetchDatasetDetail = useCallback(async (datasetId) => {
+    if (fetchingRef.current) return;
+    fetchingRef.current = true;
     try {
       setLoadingDetail(true);
       setError('');
@@ -73,13 +40,49 @@ const Dashboard = () => {
       const response = await api.get(`/api/datasets/${datasetId}/`);
       setSelectedDataset(response.data);
       setEquipmentData(response.data.equipment_records || []);
-      setLoadedDatasetId(String(datasetId));
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to load dataset');
     } finally {
       setLoadingDetail(false);
+      fetchingRef.current = false;
     }
-  };
+  }, []);
+
+  const fetchDatasets = useCallback(async () => {
+    try {
+      setLoadingList(true);
+      const response = await api.get('/api/datasets/');
+      // Handle both array and paginated response formats
+      const data = response.data;
+      let dataList = [];
+      if (Array.isArray(data)) {
+        dataList = data;
+      } else if (data && Array.isArray(data.results)) {
+        dataList = data.results;
+      }
+      setDatasets(dataList);
+
+      // Auto-select the first dataset if no specific ID in URL
+      if (!id && dataList.length > 0) {
+        fetchDatasetDetail(String(dataList[0].id));
+      }
+    } catch (err) {
+      setDatasets([]);
+    } finally {
+      setLoadingList(false);
+    }
+  }, [id, fetchDatasetDetail]);
+
+  useEffect(() => {
+    fetchDatasets();
+  }, [fetchDatasets]);
+
+  useEffect(() => {
+    if (id) {
+      fetchDatasetDetail(id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   const handleDatasetSelect = (dataset) => {
     if (dataset) {
@@ -109,7 +112,20 @@ const Dashboard = () => {
       link.parentNode.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (err) {
-      alert('Failed to download PDF report: ' + (err.response?.data?.detail || err.message));
+      let errorMessage = err.message;
+      // When responseType is 'blob', error response data is a Blob — parse it
+      if (err.response?.data instanceof Blob) {
+        try {
+          const text = await err.response.data.text();
+          const errorData = JSON.parse(text);
+          errorMessage = errorData.detail || errorData.error || errorMessage;
+        } catch {
+          // Blob wasn't JSON, use default message
+        }
+      } else if (err.response?.data?.detail) {
+        errorMessage = err.response.data.detail;
+      }
+      alert('Failed to download PDF report: ' + errorMessage);
     } finally {
       setDownloadingPDF(false);
     }
