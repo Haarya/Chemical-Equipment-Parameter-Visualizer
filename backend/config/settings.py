@@ -200,6 +200,13 @@ CORS_ALLOW_HEADERS = [
     'x-requested-with',
 ]
 
+# Expose headers for PDF download and other responses
+CORS_EXPOSE_HEADERS = [
+    'content-disposition',
+    'content-length',
+    'content-type',
+]
+
 # CSRF Trusted Origins (for production)
 CSRF_TRUSTED_ORIGINS = config(
     'CSRF_TRUSTED_ORIGINS',

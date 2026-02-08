@@ -5,7 +5,7 @@
  * Includes sidebar for dataset history navigation.
  */
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Layout from '../components/Layout';
 import SummaryCard from '../components/SummaryCard';
@@ -27,62 +27,84 @@ const Dashboard = () => {
   const [error, setError] = useState('');
   const [downloadingPDF, setDownloadingPDF] = useState(false);
 
-  // Ref to prevent concurrent fetches
-  const fetchingRef = useRef(false);
+  // Refs to prevent double-fetches and track mounted state
+  const mountedRef = useRef(true);
+  const currentDetailRequest = useRef(null);
+  const initialLoadDone = useRef(false);
 
-  const fetchDatasetDetail = useCallback(async (datasetId) => {
-    if (fetchingRef.current) return;
-    fetchingRef.current = true;
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => { mountedRef.current = false; };
+  }, []);
+
+  // Single effect: on mount, load datasets list (once)
+  useEffect(() => {
+    if (initialLoadDone.current) return;
+    initialLoadDone.current = true;
+
+    const loadDatasets = async () => {
+      try {
+        setLoadingList(true);
+        const response = await api.get('/api/datasets/');
+        if (!mountedRef.current) return;
+
+        const data = response.data;
+        let dataList = [];
+        if (Array.isArray(data)) {
+          dataList = data;
+        } else if (data && Array.isArray(data.results)) {
+          dataList = data.results;
+        }
+        setDatasets(dataList);
+
+        // If no specific dataset in URL, auto-select first
+        if (!id && dataList.length > 0) {
+          loadDetail(String(dataList[0].id));
+        }
+      } catch (err) {
+        if (mountedRef.current) setDatasets([]);
+      } finally {
+        if (mountedRef.current) setLoadingList(false);
+      }
+    };
+
+    loadDatasets();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Load dataset detail when URL id changes
+  useEffect(() => {
+    if (id) {
+      loadDetail(id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
+
+  const loadDetail = async (datasetId) => {
+    // Cancel tracking of any previous request
+    const requestId = Date.now();
+    currentDetailRequest.current = requestId;
+
     try {
       setLoadingDetail(true);
       setError('');
       
       const response = await api.get(`/api/datasets/${datasetId}/`);
+
+      // Only update state if this is still the latest request and component is mounted
+      if (!mountedRef.current || currentDetailRequest.current !== requestId) return;
+
       setSelectedDataset(response.data);
       setEquipmentData(response.data.equipment_records || []);
     } catch (err) {
+      if (!mountedRef.current || currentDetailRequest.current !== requestId) return;
       setError(err.response?.data?.detail || 'Failed to load dataset');
     } finally {
-      setLoadingDetail(false);
-      fetchingRef.current = false;
-    }
-  }, []);
-
-  const fetchDatasets = useCallback(async () => {
-    try {
-      setLoadingList(true);
-      const response = await api.get('/api/datasets/');
-      // Handle both array and paginated response formats
-      const data = response.data;
-      let dataList = [];
-      if (Array.isArray(data)) {
-        dataList = data;
-      } else if (data && Array.isArray(data.results)) {
-        dataList = data.results;
+      if (mountedRef.current && currentDetailRequest.current === requestId) {
+        setLoadingDetail(false);
       }
-      setDatasets(dataList);
-
-      // Auto-select the first dataset if no specific ID in URL
-      if (!id && dataList.length > 0) {
-        fetchDatasetDetail(String(dataList[0].id));
-      }
-    } catch (err) {
-      setDatasets([]);
-    } finally {
-      setLoadingList(false);
     }
-  }, [id, fetchDatasetDetail]);
-
-  useEffect(() => {
-    fetchDatasets();
-  }, [fetchDatasets]);
-
-  useEffect(() => {
-    if (id) {
-      fetchDatasetDetail(id);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+  };
 
   const handleDatasetSelect = (dataset) => {
     if (dataset) {
@@ -102,8 +124,24 @@ const Dashboard = () => {
         responseType: 'blob'
       });
 
+      // Verify we got a PDF (not an error page)
+      const contentType = response.headers['content-type'] || '';
+      if (!contentType.includes('application/pdf')) {
+        // Server returned a non-PDF response (possibly an error in HTML/JSON)
+        const text = await response.data.text();
+        try {
+          const errorData = JSON.parse(text);
+          throw new Error(errorData.detail || errorData.error || 'Server returned an unexpected response');
+        } catch (parseErr) {
+          if (parseErr.message !== 'Server returned an unexpected response') {
+            throw new Error('Failed to generate PDF report');
+          }
+          throw parseErr;
+        }
+      }
+
       // Create download link
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
       const link = document.createElement('a');
       link.href = url;
       link.setAttribute('download', `${selectedDataset.name.replace('.csv', '')}_report.pdf`);
@@ -112,18 +150,20 @@ const Dashboard = () => {
       link.parentNode.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (err) {
-      let errorMessage = err.message;
+      let errorMessage = err.message || 'Unknown error';
       // When responseType is 'blob', error response data is a Blob — parse it
       if (err.response?.data instanceof Blob) {
         try {
           const text = await err.response.data.text();
           const errorData = JSON.parse(text);
-          errorMessage = errorData.detail || errorData.error || errorMessage;
+          errorMessage = errorData.detail || errorData.error || err.message;
         } catch {
-          // Blob wasn't JSON, use default message
+          errorMessage = `Server error (${err.response?.status || 'unknown'})`;
         }
       } else if (err.response?.data?.detail) {
         errorMessage = err.response.data.detail;
+      } else if (err.response?.data?.error) {
+        errorMessage = err.response.data.error;
       }
       alert('Failed to download PDF report: ' + errorMessage);
     } finally {
@@ -175,7 +215,7 @@ const Dashboard = () => {
           <div className="message message-error">
             {error}
           </div>
-          <button onClick={() => fetchDatasets()} className="btn btn-primary">
+          <button onClick={() => window.location.reload()} className="btn btn-primary">
             Retry
           </button>
         </div>

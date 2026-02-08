@@ -296,6 +296,7 @@ class DatasetListView(generics.ListAPIView):
     
     serializer_class = DatasetListSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = None  # No pagination - only 5 results max
     
     def get_queryset(self):
         """
@@ -418,7 +419,13 @@ class GeneratePDFReportView(APIView):
         Generate and return PDF report for a specific dataset owned by the user.
         """
         # SECURITY: Validate ID and user ownership
-        dataset = get_object_or_404(Dataset, pk=pk, user=request.user)
+        try:
+            dataset = Dataset.objects.get(pk=pk, user=request.user)
+        except Dataset.DoesNotExist:
+            return Response(
+                {'error': 'Dataset not found', 'detail': f'No dataset found with id {pk} for your account'},
+                status=status.HTTP_404_NOT_FOUND
+            )
         
         # Get equipment records
         equipment_records = Equipment.objects.filter(dataset=dataset).order_by('equipment_name')
@@ -474,15 +481,20 @@ class GeneratePDFReportView(APIView):
             safe_filename = dataset.name.replace(' ', '_').replace('/', '_').replace('\\', '_')[:50]
             response['Content-Disposition'] = f'attachment; filename="equipment_report_{dataset.id}_{safe_filename}.pdf"'
             response['Content-Length'] = len(pdf_content)
+            # Expose headers for CORS
+            response['Access-Control-Expose-Headers'] = 'Content-Disposition, Content-Length, Content-Type'
             
             return response
         
         except Exception as e:
             # SECURITY: Don't expose internal errors in production
+            import traceback
             if settings.DEBUG:
                 error_detail = str(e)
             else:
                 error_detail = 'Error generating PDF report'
+                # Log the full traceback for debugging
+                print(f'PDF generation error for dataset {pk}: {traceback.format_exc()}')
             
             return Response(
                 {'error': 'PDF generation failed', 'details': error_detail},
