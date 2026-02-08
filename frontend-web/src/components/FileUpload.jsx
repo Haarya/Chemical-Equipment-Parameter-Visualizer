@@ -137,7 +137,7 @@ const FileUpload = ({ onUploadSuccess }) => {
       }
 
       setTimeout(() => {
-        navigate(`/dataset/${response.dataset.id}`);
+        navigate('/dashboard');
       }, 2000);
 
     } catch (error) {
