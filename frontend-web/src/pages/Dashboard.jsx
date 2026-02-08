@@ -2,7 +2,11 @@
  * Dashboard Page
  * 
  * Main dashboard displaying dataset analytics with charts, tables, and summary cards.
- * Includes sidebar for dataset history navigation.
+ * 
+ * LOADING STRATEGY (no skeletons — eliminates all blinking):
+ * - Initial load: single progress bar until ALL data is ready, then show everything at once
+ * - Dataset switch: thin top progress bar, old data stays visible, replaced atomically
+ * - Child components NEVER receive loading=true, so they never show skeleton states
  */
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -18,116 +22,133 @@ import './Dashboard.css';
 const Dashboard = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  
+
+  // Data state
   const [datasets, setDatasets] = useState([]);
   const [selectedDataset, setSelectedDataset] = useState(null);
   const [equipmentData, setEquipmentData] = useState([]);
-  const [loadingList, setLoadingList] = useState(true);
-  const [loadingDetail, setLoadingDetail] = useState(false);
   const [error, setError] = useState('');
   const [downloadingPDF, setDownloadingPDF] = useState(false);
 
-  // Refs to prevent double-fetches and track mounted state
-  const mountedRef = useRef(true);
-  const currentDetailRequest = useRef(null);
-  const initialLoadDone = useRef(false);
+  // Loading state — only two modes:
+  // initialLoading = true: first page load, nothing to show yet
+  // topBarLoading = true: switching datasets, old data stays visible
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [topBarLoading, setTopBarLoading] = useState(false);
 
-  // Cleanup on unmount
+  // Refs
+  const mountedRef = useRef(true);
+  const initDone = useRef(false);
+  const currentReq = useRef(null);
+  const loadedIdRef = useRef(null); // track which id we already loaded
+
+  // Cleanup
   useEffect(() => {
     return () => { mountedRef.current = false; };
   }, []);
 
-  // Single effect: on mount, load datasets list (once)
+  // ── INITIAL LOAD (runs exactly once) ──
+  // Fetches dataset list AND detail in one go, then flips initialLoading off.
+  // No intermediate state transitions → no blinking.
   useEffect(() => {
-    if (initialLoadDone.current) return;
-    initialLoadDone.current = true;
+    if (initDone.current) return;
+    initDone.current = true;
 
-    const loadDatasets = async () => {
+    const init = async () => {
       try {
-        setLoadingList(true);
-        const response = await api.get('/api/datasets/');
+        // 1) Fetch dataset list
+        const listRes = await api.get('/api/datasets/');
         if (!mountedRef.current) return;
 
-        const data = response.data;
-        let dataList = [];
-        if (Array.isArray(data)) {
-          dataList = data;
-        } else if (data && Array.isArray(data.results)) {
-          dataList = data.results;
-        }
-        setDatasets(dataList);
+        const raw = listRes.data;
+        const dataList = Array.isArray(raw) ? raw : (raw?.results || []);
 
-        // If no specific dataset in URL, auto-select first
-        if (!id && dataList.length > 0) {
-          loadDetail(String(dataList[0].id));
+        // 2) Determine which dataset to show
+        const targetId = id || (dataList.length > 0 ? String(dataList[0].id) : null);
+
+        let detail = null;
+        let records = [];
+
+        if (targetId) {
+          const detailRes = await api.get(`/api/datasets/${targetId}/`);
+          if (!mountedRef.current) return;
+          detail = detailRes.data;
+          records = detailRes.data.equipment_records || [];
+          loadedIdRef.current = String(targetId);
         }
+
+        // 3) Batch ALL state updates together — single render transition
+        setDatasets(dataList);
+        setSelectedDataset(detail);
+        setEquipmentData(records);
       } catch (err) {
-        if (mountedRef.current) setDatasets([]);
+        if (mountedRef.current) {
+          setError(err.response?.data?.detail || 'Failed to load data');
+        }
       } finally {
-        if (mountedRef.current) setLoadingList(false);
+        if (mountedRef.current) {
+          setInitialLoading(false);
+        }
       }
     };
 
-    loadDatasets();
+    init();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Load dataset detail when URL id changes
+  // ── DATASET SWITCH (when URL id changes AFTER initial load) ──
+  // Shows thin top bar; keeps old data visible; replaces atomically.
   useEffect(() => {
-    if (id) {
-      loadDetail(id);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+    if (!id) return;
+    if (initialLoading) return; // wait for init to finish
+    if (String(id) === loadedIdRef.current) return; // already showing this dataset
 
-  const loadDetail = async (datasetId) => {
-    // Cancel tracking of any previous request
-    const requestId = Date.now();
-    currentDetailRequest.current = requestId;
+    const reqId = Date.now();
+    currentReq.current = reqId;
 
-    try {
-      setLoadingDetail(true);
-      setError('');
-      
-      const response = await api.get(`/api/datasets/${datasetId}/`);
-
-      // Only update state if this is still the latest request and component is mounted
-      if (!mountedRef.current || currentDetailRequest.current !== requestId) return;
-
-      setSelectedDataset(response.data);
-      setEquipmentData(response.data.equipment_records || []);
-    } catch (err) {
-      if (!mountedRef.current || currentDetailRequest.current !== requestId) return;
-      setError(err.response?.data?.detail || 'Failed to load dataset');
-    } finally {
-      if (mountedRef.current && currentDetailRequest.current === requestId) {
-        setLoadingDetail(false);
+    const switchDataset = async () => {
+      setTopBarLoading(true);
+      try {
+        const res = await api.get(`/api/datasets/${id}/`);
+        if (!mountedRef.current || currentReq.current !== reqId) return;
+        setSelectedDataset(res.data);
+        setEquipmentData(res.data.equipment_records || []);
+        loadedIdRef.current = String(id);
+        setError('');
+      } catch (err) {
+        if (!mountedRef.current || currentReq.current !== reqId) return;
+        setError(err.response?.data?.detail || 'Failed to load dataset');
+      } finally {
+        if (mountedRef.current && currentReq.current === reqId) {
+          setTopBarLoading(false);
+        }
       }
-    }
+    };
+
+    switchDataset();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, initialLoading]);
+
+  // ── Handlers ──
+  const handleDatasetSelect = (dataset) => {
+    if (dataset) navigate(`/dataset/${dataset.id}`);
   };
 
-  const handleDatasetSelect = (dataset) => {
-    if (dataset) {
-      navigate(`/dataset/${dataset.id}`);
-    }
-  };
+  const handleUploadNew = () => navigate('/upload');
 
   const handleDownloadPDF = async () => {
     if (!selectedDataset) {
       alert('No dataset selected');
       return;
     }
-
     try {
       setDownloadingPDF(true);
       const response = await api.get(`/api/datasets/${selectedDataset.id}/report/pdf/`, {
         responseType: 'blob'
       });
 
-      // Verify we got a PDF (not an error page)
       const contentType = response.headers['content-type'] || '';
       if (!contentType.includes('application/pdf')) {
-        // Server returned a non-PDF response (possibly an error in HTML/JSON)
         const text = await response.data.text();
         try {
           const errorData = JSON.parse(text);
@@ -140,7 +161,6 @@ const Dashboard = () => {
         }
       }
 
-      // Create download link
       const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
       const link = document.createElement('a');
       link.href = url;
@@ -151,7 +171,6 @@ const Dashboard = () => {
       window.URL.revokeObjectURL(url);
     } catch (err) {
       let errorMessage = err.message || 'Unknown error';
-      // When responseType is 'blob', error response data is a Blob — parse it
       if (err.response?.data instanceof Blob) {
         try {
           const text = await err.response.data.text();
@@ -171,50 +190,28 @@ const Dashboard = () => {
     }
   };
 
-  const handleUploadNew = () => {
-    navigate('/upload');
-  };
+  // ════════════════ RENDER ════════════════
 
-  const isInitialLoading = loadingList && !selectedDataset && datasets.length === 0;
-
-  if (isInitialLoading) {
+  // STATE 1: Initial load — simple progress bar, NO skeleton
+  if (initialLoading) {
     return (
       <Layout>
-        <div className="dashboard-skeleton">
-          <div className="dashboard-skeleton-header">
-            <div className="skeleton-line skeleton-line-xl"></div>
-            <div className="skeleton-line skeleton-line-lg"></div>
+        <div className="dashboard-progress-screen">
+          <div className="progress-bar-track">
+            <div className="progress-bar-fill"></div>
           </div>
-          <div className="dashboard-skeleton-actions">
-            <div className="skeleton-pill"></div>
-            <div className="skeleton-pill"></div>
-          </div>
-          <div className="dashboard-skeleton-cards">
-            {Array.from({ length: 5 }).map((_, index) => (
-              <div key={index} className="skeleton-card"></div>
-            ))}
-          </div>
-          <div className="dashboard-skeleton-charts">
-            <div className="skeleton-panel"></div>
-            <div className="skeleton-panel"></div>
-            <div className="skeleton-panel skeleton-panel-wide"></div>
-          </div>
-          <div className="dashboard-skeleton-table">
-            <div className="skeleton-line skeleton-line-md"></div>
-            <div className="skeleton-table"></div>
-          </div>
+          <p className="progress-text">Loading dashboard...</p>
         </div>
       </Layout>
     );
   }
 
+  // STATE 2: Error with no data to show
   if (error && !selectedDataset) {
     return (
       <Layout>
         <div className="dashboard-error">
-          <div className="message message-error">
-            {error}
-          </div>
+          <div className="message message-error">{error}</div>
           <button onClick={() => window.location.reload()} className="btn btn-primary">
             Retry
           </button>
@@ -223,17 +220,15 @@ const Dashboard = () => {
     );
   }
 
+  // STATE 3: No datasets at all
   if (!selectedDataset && datasets.length === 0) {
     return (
       <Layout>
         <div className="dashboard-empty">
           <svg width="100" height="100" viewBox="0 0 100 100" fill="none">
-            <path 
-              d="M40 15 L40 35 L25 75 C22 82 25 90 32.5 90 L67.5 90 C75 90 78 82 75 75 L60 35 L60 15" 
-              stroke="var(--color-forest)" 
-              strokeWidth="3" 
-              strokeLinecap="round" 
-              strokeLinejoin="round"
+            <path
+              d="M40 15 L40 35 L25 75 C22 82 25 90 32.5 90 L67.5 90 C75 90 78 82 75 75 L60 35 L60 15"
+              stroke="var(--color-forest)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
               fill="var(--color-sage)"
             />
             <line x1="40" y1="15" x2="60" y2="15" stroke="var(--color-forest)" strokeWidth="3" strokeLinecap="round"/>
@@ -251,11 +246,20 @@ const Dashboard = () => {
     );
   }
 
+  // STATE 4: Main dashboard — data is ready
+  // Child components always get loading={false} → they NEVER show skeletons
   return (
     <Layout>
+      {/* Thin top progress bar when switching datasets */}
+      {topBarLoading && (
+        <div className="top-progress-bar">
+          <div className="top-progress-bar-fill"></div>
+        </div>
+      )}
+
       <div className="dashboard-container">
         <div className="dashboard-main">
-          {/* Dashboard Header */}
+          {/* Header */}
           <div className="dashboard-header">
             <div className="dashboard-header-content">
               <h1 className="dashboard-title">Dashboard</h1>
@@ -264,7 +268,7 @@ const Dashboard = () => {
               </p>
             </div>
             <div className="dashboard-actions">
-              <button 
+              <button
                 onClick={handleDownloadPDF}
                 disabled={downloadingPDF || !selectedDataset}
                 className="btn btn-secondary"
@@ -285,10 +289,7 @@ const Dashboard = () => {
                   </>
                 )}
               </button>
-              <button 
-                onClick={handleUploadNew}
-                className="btn btn-primary"
-              >
+              <button onClick={handleUploadNew} className="btn btn-primary">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                   <polyline points="17 8 12 3 7 8"/>
@@ -299,31 +300,31 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Summary Cards */}
-          <SummaryCard 
+          {/* Summary Cards — never loading */}
+          <SummaryCard
             data={equipmentData}
             datasetInfo={selectedDataset}
-            loading={loadingDetail}
+            loading={false}
           />
 
-          {/* Charts Panel */}
-          <ChartPanel 
+          {/* Charts — never loading */}
+          <ChartPanel
             data={equipmentData}
-            loading={loadingDetail}
+            loading={false}
           />
 
-          {/* Data Table */}
+          {/* Data Table — never loading */}
           <div className="dashboard-section">
             <h2 className="section-title">Equipment Data</h2>
-            <DataTable 
+            <DataTable
               data={equipmentData}
-              loading={loadingDetail}
+              loading={false}
             />
           </div>
         </div>
 
         {/* History Sidebar */}
-        <HistorySidebar 
+        <HistorySidebar
           onSelectDataset={handleDatasetSelect}
           selectedDatasetId={selectedDataset?.id}
           showDelete={true}
