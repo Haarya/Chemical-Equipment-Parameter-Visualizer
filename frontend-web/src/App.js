@@ -33,14 +33,8 @@ function App() {
             } 
           />
 
-          <Route 
-            path="/dataset/:id" 
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            } 
-          />
+          {/* /dataset/:id redirects to dashboard — dataset selection is handled via state */}
+          <Route path="/dataset/:id" element={<Navigate to="/dashboard" replace />} />
           
           <Route 
             path="/upload" 

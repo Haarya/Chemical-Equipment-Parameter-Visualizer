@@ -3,14 +3,14 @@
  * 
  * Main dashboard displaying dataset analytics with charts, tables, and summary cards.
  * 
- * LOADING STRATEGY (no skeletons — eliminates all blinking):
- * - Initial load: single progress bar until ALL data is ready, then show everything at once
- * - Dataset switch: thin top progress bar, old data stays visible, replaced atomically
- * - Child components NEVER receive loading=true, so they never show skeleton states
+ * ARCHITECTURE: No URL-based dataset routing. Everything is state-driven.
+ * - On mount: fetch dataset list + auto-load first dataset, show progress bar until ready
+ * - Sidebar click: load dataset detail directly via state, no navigation/remount
+ * - Never passes loading=true to children → no skeleton flicker ever
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import SummaryCard from '../components/SummaryCard';
 import ChartPanel from '../components/ChartPanel';
@@ -21,7 +21,6 @@ import './Dashboard.css';
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { id } = useParams();
 
   // Data state
   const [datasets, setDatasets] = useState([]);
@@ -30,9 +29,7 @@ const Dashboard = () => {
   const [error, setError] = useState('');
   const [downloadingPDF, setDownloadingPDF] = useState(false);
 
-  // Loading state — only two modes:
-  // initialLoading = true: first page load, nothing to show yet
-  // topBarLoading = true: switching datasets, old data stays visible
+  // Loading: only ONE loading state — the initial full-page load
   const [initialLoading, setInitialLoading] = useState(true);
   const [topBarLoading, setTopBarLoading] = useState(false);
 
@@ -40,44 +37,37 @@ const Dashboard = () => {
   const mountedRef = useRef(true);
   const initDone = useRef(false);
   const currentReq = useRef(null);
-  const loadedIdRef = useRef(null); // track which id we already loaded
 
   // Cleanup
   useEffect(() => {
     return () => { mountedRef.current = false; };
   }, []);
 
-  // ── INITIAL LOAD (runs exactly once) ──
-  // Fetches dataset list AND detail in one go, then flips initialLoading off.
-  // No intermediate state transitions → no blinking.
+  // ── INITIAL LOAD (exactly once) ──
+  // Fetch list + first dataset detail together, then show everything at once.
   useEffect(() => {
     if (initDone.current) return;
     initDone.current = true;
 
     const init = async () => {
       try {
-        // 1) Fetch dataset list
         const listRes = await api.get('/api/datasets/');
         if (!mountedRef.current) return;
 
         const raw = listRes.data;
         const dataList = Array.isArray(raw) ? raw : (raw?.results || []);
 
-        // 2) Determine which dataset to show
-        const targetId = id || (dataList.length > 0 ? String(dataList[0].id) : null);
-
         let detail = null;
         let records = [];
 
-        if (targetId) {
-          const detailRes = await api.get(`/api/datasets/${targetId}/`);
+        if (dataList.length > 0) {
+          const detailRes = await api.get(`/api/datasets/${dataList[0].id}/`);
           if (!mountedRef.current) return;
           detail = detailRes.data;
           records = detailRes.data.equipment_records || [];
-          loadedIdRef.current = String(targetId);
         }
 
-        // 3) Batch ALL state updates together — single render transition
+        // Single batch state update → one render → no flicker
         setDatasets(dataList);
         setSelectedDataset(detail);
         setEquipmentData(records);
@@ -86,52 +76,36 @@ const Dashboard = () => {
           setError(err.response?.data?.detail || 'Failed to load data');
         }
       } finally {
-        if (mountedRef.current) {
-          setInitialLoading(false);
-        }
+        if (mountedRef.current) setInitialLoading(false);
       }
     };
 
     init();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ── DATASET SWITCH (when URL id changes AFTER initial load) ──
-  // Shows thin top bar; keeps old data visible; replaces atomically.
-  useEffect(() => {
-    if (!id) return;
-    if (initialLoading) return; // wait for init to finish
-    if (String(id) === loadedIdRef.current) return; // already showing this dataset
+  // ── DATASET SELECT (sidebar click — pure state, NO navigation) ──
+  const handleDatasetSelect = async (dataset) => {
+    if (!dataset) return;
+    if (dataset.id === selectedDataset?.id) return; // already selected
 
     const reqId = Date.now();
     currentReq.current = reqId;
+    setTopBarLoading(true);
 
-    const switchDataset = async () => {
-      setTopBarLoading(true);
-      try {
-        const res = await api.get(`/api/datasets/${id}/`);
-        if (!mountedRef.current || currentReq.current !== reqId) return;
-        setSelectedDataset(res.data);
-        setEquipmentData(res.data.equipment_records || []);
-        loadedIdRef.current = String(id);
-        setError('');
-      } catch (err) {
-        if (!mountedRef.current || currentReq.current !== reqId) return;
-        setError(err.response?.data?.detail || 'Failed to load dataset');
-      } finally {
-        if (mountedRef.current && currentReq.current === reqId) {
-          setTopBarLoading(false);
-        }
+    try {
+      const res = await api.get(`/api/datasets/${dataset.id}/`);
+      if (!mountedRef.current || currentReq.current !== reqId) return;
+      setSelectedDataset(res.data);
+      setEquipmentData(res.data.equipment_records || []);
+      setError('');
+    } catch (err) {
+      if (!mountedRef.current || currentReq.current !== reqId) return;
+      setError(err.response?.data?.detail || 'Failed to load dataset');
+    } finally {
+      if (mountedRef.current && currentReq.current === reqId) {
+        setTopBarLoading(false);
       }
-    };
-
-    switchDataset();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, initialLoading]);
-
-  // ── Handlers ──
-  const handleDatasetSelect = (dataset) => {
-    if (dataset) navigate(`/dataset/${dataset.id}`);
+    }
   };
 
   const handleUploadNew = () => navigate('/upload');

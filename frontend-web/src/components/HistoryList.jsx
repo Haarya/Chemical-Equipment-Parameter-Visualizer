@@ -71,7 +71,8 @@ const HistoryList = ({ onSelectDataset, selectedDatasetId, showDelete = false })
     if (onSelectDataset) {
       onSelectDataset(dataset);
     } else {
-      navigate(`/dataset/${dataset.id}`);
+      // Fallback: go to dashboard (dataset selection is state-driven, not URL-driven)
+      navigate('/dashboard');
     }
   };
 
