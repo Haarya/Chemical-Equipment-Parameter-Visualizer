@@ -1,0 +1,428 @@
+/**
+ * Landing Page Styles
+ * 
+ * Minimalistic, modern landing page inspired by Intercom's design language.
+ * Uses the Reactometrix sage-green / forest-green palette.
+ */
+
+/* ========================================
+   Page wrapper
+   ======================================== */
+.landing {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-white);
+  overflow-x: hidden;
+}
+
+/* ========================================
+   Navigation
+   ======================================== */
+.landing-nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--color-gray-100);
+}
+
+.landing-nav-inner {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 0.875rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.landing-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  cursor: default;
+}
+
+.landing-brand-name {
+  font-family: var(--font-serif);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--color-forest);
+  letter-spacing: -0.5px;
+}
+
+.landing-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ========================================
+   Hero
+   ======================================== */
+.landing-hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 6rem 2rem 5rem;
+  background: linear-gradient(
+    175deg,
+    var(--color-white) 0%,
+    var(--color-sage) 100%
+  );
+}
+
+.landing-hero-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 720px;
+}
+
+.landing-badge {
+  display: inline-block;
+  padding: 0.35rem 1rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--color-forest);
+  background: rgba(47, 92, 70, 0.08);
+  border: 1px solid rgba(47, 92, 70, 0.15);
+  border-radius: 999px;
+  margin-bottom: 1.5rem;
+}
+
+.landing-headline {
+  font-family: var(--font-serif);
+  font-size: 3.5rem;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -1.5px;
+  color: var(--color-charcoal);
+  margin: 0 0 1.25rem;
+}
+
+.landing-headline-accent {
+  color: var(--color-forest);
+}
+
+.landing-subheadline {
+  font-size: 1.15rem;
+  line-height: 1.7;
+  color: var(--color-gray-500);
+  margin: 0 auto 2.25rem;
+  max-width: 560px;
+}
+
+.landing-hero-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+/* Decorative background */
+.landing-hero-bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* ========================================
+   Features
+   ======================================== */
+.landing-features {
+  padding: 5rem 2rem;
+  background: var(--color-white);
+}
+
+.landing-features-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.landing-section-title {
+  font-family: var(--font-serif);
+  font-size: 2.25rem;
+  font-weight: 700;
+  letter-spacing: -1px;
+  color: var(--color-charcoal);
+  margin: 0 0 0.75rem;
+}
+
+.landing-section-subtitle {
+  font-size: 1.05rem;
+  color: var(--color-gray-500);
+  margin: 0 auto 3rem;
+  max-width: 520px;
+}
+
+.landing-features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  text-align: left;
+}
+
+/* Feature card */
+.landing-feature-card {
+  padding: 2rem;
+  border-radius: var(--radius-lg);
+  background: var(--color-white);
+  border: 1px solid var(--color-gray-100);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.landing-feature-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-4px);
+}
+
+.landing-feature-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  background: var(--color-sage);
+  color: var(--color-forest);
+  margin-bottom: 1.25rem;
+}
+
+.landing-feature-title {
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--color-charcoal);
+  margin: 0 0 0.5rem;
+}
+
+.landing-feature-desc {
+  font-size: 0.925rem;
+  line-height: 1.65;
+  color: var(--color-gray-500);
+  margin: 0;
+}
+
+/* ========================================
+   How It Works
+   ======================================== */
+.landing-how {
+  padding: 5rem 2rem;
+  background: linear-gradient(180deg, var(--color-sage) 0%, var(--color-white) 100%);
+}
+
+.landing-how-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.landing-steps {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0;
+  margin-top: 3rem;
+}
+
+.landing-step {
+  flex: 1;
+  text-align: center;
+  padding: 0 1.5rem;
+}
+
+.landing-step h3 {
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--color-charcoal);
+  margin: 0.75rem 0 0.5rem;
+}
+
+.landing-step p {
+  font-size: 0.925rem;
+  color: var(--color-gray-500);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.landing-step-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--color-forest);
+  color: var(--color-white);
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.landing-step-divider {
+  width: 60px;
+  height: 2px;
+  background: var(--color-forest);
+  opacity: 0.2;
+  margin-top: 22px;
+  flex-shrink: 0;
+}
+
+/* ========================================
+   CTA
+   ======================================== */
+.landing-cta {
+  padding: 5rem 2rem;
+  text-align: center;
+  background: var(--color-white);
+}
+
+.landing-cta-inner {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.landing-cta h2 {
+  font-family: var(--font-serif);
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.75px;
+  color: var(--color-charcoal);
+  margin: 0 0 0.75rem;
+}
+
+.landing-cta p {
+  font-size: 1.05rem;
+  color: var(--color-gray-500);
+  margin: 0 0 2rem;
+}
+
+/* ========================================
+   Footer
+   ======================================== */
+.landing-footer {
+  padding: 2rem;
+  border-top: 1px solid var(--color-gray-100);
+  background: var(--color-white);
+}
+
+.landing-footer-inner {
+  max-width: 1140px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.landing-footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-gray-400);
+}
+
+.landing-footer-copy {
+  font-size: 0.825rem;
+  color: var(--color-gray-400);
+  margin: 0;
+}
+
+/* ========================================
+   Responsive – Tablet
+   ======================================== */
+@media (max-width: 900px) {
+  .landing-features-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .landing-headline {
+    font-size: 2.75rem;
+  }
+}
+
+/* ========================================
+   Responsive – Mobile
+   ======================================== */
+@media (max-width: 640px) {
+  .landing-nav-inner {
+    padding: 0.75rem 1rem;
+  }
+
+  .landing-brand-name {
+    font-size: 1.15rem;
+  }
+
+  .landing-hero {
+    padding: 4rem 1.25rem 3.5rem;
+  }
+
+  .landing-headline {
+    font-size: 2rem;
+    letter-spacing: -0.75px;
+  }
+
+  .landing-subheadline {
+    font-size: 1rem;
+  }
+
+  .landing-hero-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .landing-hero-actions .btn {
+    width: 100%;
+  }
+
+  .landing-features {
+    padding: 3rem 1.25rem;
+  }
+
+  .landing-features-grid {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .landing-section-title {
+    font-size: 1.75rem;
+  }
+
+  .landing-how {
+    padding: 3rem 1.25rem;
+  }
+
+  .landing-steps {
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .landing-step-divider {
+    width: 2px;
+    height: 32px;
+    margin: 0 auto;
+  }
+
+  .landing-cta {
+    padding: 3rem 1.25rem;
+  }
+
+  .landing-cta h2 {
+    font-size: 1.5rem;
+  }
+
+  .landing-footer-inner {
+    flex-direction: column;
+    gap: 0.75rem;
+    text-align: center;
+  }
+}
