@@ -219,6 +219,3 @@ All `/api/` endpoints use **Token Authentication** (`Authorization: Token <key>`
 
 ---
 
-## License
-
-MIT
