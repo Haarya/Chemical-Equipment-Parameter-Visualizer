@@ -1,230 +1,224 @@
 # Chemical Equipment Parameter Visualizer
 
-> A hybrid Web + Desktop application for analyzing and visualizing chemical equipment data with CSV upload, interactive charts, and PDF reporting.
+A hybrid **Web + Desktop** application for uploading, analyzing, and visualizing chemical equipment data. Built with a shared Django REST backend consumed by both a React web frontend and a PyQt5 desktop frontend.
+
+**Live Web App:** [https://reactometrix.vercel.app](https://reactometrix.vercel.app)
 
 ---
 
-## 📋 Project Overview
+## Tech Stack
 
-This application enables users to upload CSV files containing chemical equipment parameters, perform statistical analysis, and visualize the results through both a web interface and desktop application.
-
----
-
-## 🛠️ Tech Stack
-
-| Layer | Technology | Purpose |
-|-------|------------|---------|
-| **Backend** | Django + Django REST Framework | RESTful API server |
-| **Frontend (Web)** | React.js + Chart.js | Web dashboard with charts |
-| **Frontend (Desktop)** | PyQt5 + Matplotlib | Desktop application |
-| **Data Processing** | Pandas | CSV parsing & analytics |
-| **Database** | SQLite | Store last 5 datasets |
-| **Security** | Token Authentication, Rate Limiting, Input Validation | OWASP best practices |
+| Layer              | Technology                     | Purpose                         |
+| ------------------ | ------------------------------ | ------------------------------- |
+| Frontend (Web)     | React.js + Chart.js            | Interactive web dashboard       |
+| Frontend (Desktop) | PyQt5 + Matplotlib             | Native desktop visualization    |
+| Backend            | Django + Django REST Framework  | REST API, auth, data processing |
+| Data Handling      | Pandas                         | CSV parsing and analytics       |
+| Database           | SQLite                         | Stores last 5 uploaded datasets |
+| Version Control    | Git + GitHub                   | Source code management          |
 
 ---
 
-## ✨ Key Features
+## Key Features
 
-- 📁 **CSV Upload** - Upload chemical equipment data files
-- 📊 **Data Visualization** - Interactive charts (web) and plots (desktop)
-- 📈 **Analytics** - Automatic calculation of averages and distributions
-- 📄 **PDF Reports** - Generate downloadable reports
-- 🔐 **Authentication** - Secure user registration and login
-- 💾 **History Management** - Automatically keeps last 5 uploaded datasets
-- 🌐 **Dual Interface** - Access via web browser or desktop app
-
----
-
-## 🔒 Security Features
-
-✅ Rate limiting on all endpoints (IP + user-based)  
-✅ Strict input validation and sanitization  
-✅ Environment-based secrets management (.env)  
-✅ CSRF and XSS protection  
-✅ Secure file upload validation  
-✅ Token-based authentication  
+1. **CSV Upload** — Upload equipment data via web or desktop; the backend validates columns, data types, and value ranges.
+2. **Data Summary API** — Returns total count, averages (flowrate, pressure, temperature), and equipment type distribution.
+3. **Visualization** — Bar charts, pie charts, and line charts rendered with Chart.js (web) and Matplotlib (desktop).
+4. **History Management** — Keeps the last 5 uploaded datasets per user with full CRUD support.
+5. **PDF Report Generation** — Download a formatted PDF report for any dataset.
+6. **Authentication** — Token-based registration, login, and logout via Django REST Framework.
 
 ---
 
-## 📁 Project Structure
+## Prerequisites
 
-```
-FOSSEE/
-├── backend/                    # Django REST API
-│   ├── config/                 # Django project settings
-│   ├── equipment/              # Main app (models, views, serializers)
-│   ├── requirements.txt        # Python dependencies
-│   └── .env                    # Environment variables (not tracked)
-│
-├── frontend-web/               # React.js web application
-│   ├── public/                 # Static files
-│   ├── src/                    # React components
-│   │   ├── components/         # Reusable components
-│   │   ├── pages/              # Page components
-│   │   ├── services/           # API service layer
-│   │   └── context/            # React context providers
-│   └── package.json            # Node dependencies
-│
-├── frontend-desktop/           # PyQt5 desktop application
-│   ├── main.py                 # Application entry point
-│   ├── ui/                     # UI components
-│   ├── services/               # API service layer
-│   ├── charts/                 # Matplotlib chart widgets
-│   └── requirements.txt        # Python dependencies
-│
-├── sample_data/                # Sample CSV files for testing
-│   └── sample_equipment_data.csv
-│
-├── .gitignore                  # Git ignore rules
-├── implementation_plan.md      # Detailed development plan
-├── prerequisites.md            # Installation requirements
-└── README.md                   # This file
-```
+Install these before proceeding:
 
----
+| Tool       | Minimum Version | Download                                      |
+| ---------- | --------------- | --------------------------------------------- |
+| Python     | 3.9+            | [python.org/downloads](https://www.python.org/downloads/) |
+| Node.js    | 18+             | [nodejs.org](https://nodejs.org/)              |
+| Git        | any recent      | [git-scm.com](https://git-scm.com/)           |
 
-## 🚀 Quick Start
-
-### Prerequisites
-
-Ensure you have the following installed:
-- Python 3.9+
-- Node.js 18+
-- Git
-
-📖 See [prerequisites.md](prerequisites.md) for detailed installation instructions.
-
----
-
-## 📝 Setup Instructions
-
-### 1. Backend Setup (Django)
+Verify installations:
 
 ```bash
-# Navigate to backend folder
+python --version
+node --version
+npm --version
+git --version
+```
+
+---
+
+## Setup Instructions
+
+### Step 0 — Clone the Repository
+
+```bash
+git clone https://github.com/Haarya/Chemical-Equipment-Parameter-Visualizer.git
+cd Chemical-Equipment-Parameter-Visualizer
+```
+
+---
+
+### Step 1 — Backend (Django REST API)
+
+```bash
+# Move into the backend folder
 cd backend
 
-# Create virtual environment
+# Create a virtual environment
 python -m venv venv
 
-# Activate virtual environment
-# Windows:
+# Activate the virtual environment
+# Windows (PowerShell):
+.\venv\Scripts\activate
+# Windows (CMD):
 venv\Scripts\activate
-# macOS/Linux:
+# macOS / Linux:
 source venv/bin/activate
 
-# Install dependencies
+# Install Python dependencies
 pip install -r requirements.txt
 
-# Run migrations
+# Create the database tables
 python manage.py migrate
 
-# Create superuser (optional)
+# (Optional) Create an admin superuser
 python manage.py createsuperuser
 
-# Start development server
+# Start the backend server
 python manage.py runserver
 ```
 
-Backend will run at: `http://localhost:8000`
+The API is now running at **http://127.0.0.1:8000**.
+
+#### Backend Environment Variables (optional for local dev)
+
+Copy the example file and edit if needed:
+
+```bash
+copy .env.example .env
+```
+
+Key variables inside `.env`:
+
+| Variable      | Default                          | Description                          |
+| ------------- | -------------------------------- | ------------------------------------ |
+| `SECRET_KEY`  | auto-generated insecure default  | Django secret key                    |
+| `DEBUG`       | `True`                           | Set `False` in production            |
+| `ALLOWED_HOSTS` | `localhost,127.0.0.1`          | Comma-separated allowed hostnames    |
+
+> For local development the defaults work out of the box — no `.env` file is strictly required.
 
 ---
 
-### 2. Web Frontend Setup (React)
+### Step 2 — Web Frontend (React)
+
+> **Prerequisite:** The backend server must be running (Step 1).
 
 ```bash
-# Navigate to frontend-web folder
+# Open a new terminal, then:
 cd frontend-web
 
-# Install dependencies
+# Install Node.js dependencies
 npm install
 
-# Start development server
+# Start the React development server
 npm start
 ```
 
-Web app will run at: `http://localhost:3000`
+The web app opens at **http://localhost:3000** and connects to the backend at `http://127.0.0.1:8000` by default.
+
+#### Changing the Backend URL
+
+Edit `frontend-web/.env` (create it if missing):
+
+```
+REACT_APP_API_URL=http://127.0.0.1:8000
+```
+
+Restart the React dev server after changing this value.
 
 ---
 
-### 3. Desktop Frontend Setup (PyQt5)
+### Step 3 — Desktop Frontend (PyQt5)
+
+> **Prerequisite:** The backend server must be running (Step 1).
 
 ```bash
-# Navigate to frontend-desktop folder
+# Open a new terminal, then:
 cd frontend-desktop
 
-# Create virtual environment
+# Create a virtual environment
 python -m venv venv
 
-# Activate virtual environment
-# Windows:
+# Activate the virtual environment
+# Windows (PowerShell):
+.\venv\Scripts\activate
+# Windows (CMD):
 venv\Scripts\activate
-# macOS/Linux:
+# macOS / Linux:
 source venv/bin/activate
 
-# Install dependencies
+# Install Python dependencies
 pip install -r requirements.txt
 
-# Run application
+# Launch the desktop application
 python main.py
 ```
 
----
-
-## 🌐 Deployment
-
-- **Backend**: PythonAnywhere / Railway / Render
-- **Web Frontend**: Vercel / Netlify
-- **Desktop App**: Packaged with PyInstaller
+The desktop app connects to `http://127.0.0.1:8000` by default. Make sure the backend is running before launching.
 
 ---
 
-## 📊 Sample Data
+## Sample Data
 
-Sample CSV file format:
+A sample CSV file is included at `sample_data/sample_equipment_data.csv`.
+
+Expected CSV format:
 
 ```csv
 Equipment Name,Type,Flowrate,Pressure,Temperature
-P-101,Pump,150.5,15.2,65.0
-R-201,Reactor,80.0,25.5,180.0
-E-301,Heat Exchanger,200.0,10.0,120.0
+Pump-1,Pump,120,5.2,110
+Compressor-1,Compressor,95,8.4,95
+Valve-1,Valve,60,4.1,105
+HeatExchanger-1,HeatExchanger,150,6.2,130
 ```
 
-See `sample_data/sample_equipment_data.csv` for full example.
+Upload this file through the web or desktop interface to test the full workflow.
 
 ---
 
-## 🎯 Development Status
+## API Endpoints
 
-Project is currently under active development following the [implementation plan](implementation_plan.md).
+All `/api/` endpoints use **Token Authentication** (`Authorization: Token <key>`).
 
-- [x] Phase 1: Project Setup ✅
-- [ ] Phase 2: Backend API Development (In Progress)
-- [ ] Phase 3: React Web Frontend
-- [ ] Phase 4: PyQt5 Desktop Frontend
-- [ ] Phase 5: PDF Report Generation
-- [ ] Phase 6: Testing & Finalization
-- [ ] Phase 7: Deployment & Documentation
-
----
-
-## 📄 License
-
-MIT License
-
----
-
-## 👤 Author
-
-**AARYA**  
-FOSSEE Internship Project - 2026
+| Method | Endpoint                          | Description                      |
+| ------ | --------------------------------- | -------------------------------- |
+| POST   | `/api/auth/register/`             | Register a new user              |
+| POST   | `/api/auth/login/`                | Login and receive auth token     |
+| POST   | `/api/auth/logout/`               | Logout and invalidate token      |
+| GET    | `/api/auth/user/`                 | Get current user info            |
+| POST   | `/api/upload/`                    | Upload a CSV file                |
+| GET    | `/api/datasets/`                  | List datasets (last 5 per user)  |
+| GET    | `/api/datasets/<id>/`             | Get full dataset with records    |
+| GET    | `/api/datasets/<id>/summary/`     | Get summary statistics           |
+| GET    | `/api/datasets/<id>/report/pdf/`  | Download PDF report              |
+| DELETE | `/api/datasets/<id>/delete/`      | Delete a dataset                 |
 
 ---
 
-## 📞 Support
+## Deployment
 
-For issues or questions, please open an issue on GitHub.
+| Component  | Platform | URL |
+| ---------- | -------- | --- |
+| Web Frontend | Vercel | [https://reactometrix.vercel.app](https://reactometrix.vercel.app) |
+| Backend API  | Render | [https://chemical-equipment-parameter-visualizer-sias.onrender.com](https://chemical-equipment-parameter-visualizer-sias.onrender.com) |
 
 ---
 
-*Last Updated: February 2026*
+## License
+
+MIT
