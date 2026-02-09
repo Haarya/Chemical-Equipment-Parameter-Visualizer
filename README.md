@@ -171,6 +171,8 @@ python main.py
 
 The desktop app connects to `http://127.0.0.1:8000` by default. Make sure the backend is running before launching.
 
+> **Note:** After registering a new account in the desktop app, close and restart the application (`python main.py`) to log in and begin using it.
+
 ---
 
 ## Sample Data
